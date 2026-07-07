@@ -1,5 +1,6 @@
 import { getSettings, saveSettings, type ProviderId, type Settings } from '../lib/settings'
 import { LANGUAGES, SOURCE_LANGUAGES } from '../lib/languages'
+import { getGoogleToken } from '../lib/google-auth'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -7,6 +8,7 @@ const provider = $<HTMLSelectElement>('provider')
 const sourceLang = $<HTMLSelectElement>('sourceLang')
 const targetLang = $<HTMLSelectElement>('targetLang')
 const googleVersion = $<HTMLSelectElement>('google-version')
+const googleAuthMode = $<HTMLSelectElement>('google-authMode')
 
 function fillLangSelect(sel: HTMLSelectElement, list: { code: string; label: string }[]) {
   for (const l of list) {
@@ -27,12 +29,28 @@ function updateVisibility() {
   $('llm-config').classList.toggle('hidden', p !== 'llm')
 
   const v3 = googleVersion.value === 'v3'
+  const oauth = googleAuthMode.value === 'oauth'
   $('google-v2-key').classList.toggle('hidden', v3)
   $('google-v3-project').classList.toggle('hidden', !v3)
-  $('google-v3-token').classList.toggle('hidden', !v3)
+  $('google-v3-authmode').classList.toggle('hidden', !v3)
+  $('google-v3-connect').classList.toggle('hidden', !v3 || !oauth)
+  $('google-v3-token').classList.toggle('hidden', !v3 || oauth)
 }
 provider.addEventListener('change', updateVisibility)
 googleVersion.addEventListener('change', updateVisibility)
+googleAuthMode.addEventListener('change', updateVisibility)
+
+// "Google 계정 연결" — 대화형 동의 (이후 background에서 silent로 자동 갱신)
+$<HTMLButtonElement>('google-connect').addEventListener('click', async () => {
+  const status = $('google-connect-status')
+  status.textContent = '연결 중…'
+  try {
+    await getGoogleToken(true)
+    status.textContent = '연결됨 ✓'
+  } catch (e) {
+    status.textContent = e instanceof Error ? e.message : String(e)
+  }
+})
 
 async function load() {
   const s = await getSettings()
@@ -40,6 +58,7 @@ async function load() {
   sourceLang.value = s.sourceLang
   targetLang.value = s.targetLang
   googleVersion.value = s.google.apiVersion
+  googleAuthMode.value = s.google.authMode
   ;($('google-apiKey') as HTMLInputElement).value = s.google.apiKey
   ;($('google-projectId') as HTMLInputElement).value = s.google.projectId
   ;($('google-accessToken') as HTMLInputElement).value = s.google.accessToken
@@ -73,6 +92,7 @@ $<HTMLButtonElement>('save').addEventListener('click', async () => {
       apiVersion: googleVersion.value as 'v2' | 'v3',
       apiKey: ($('google-apiKey') as HTMLInputElement).value.trim(),
       projectId: ($('google-projectId') as HTMLInputElement).value.trim(),
+      authMode: googleAuthMode.value as 'oauth' | 'token',
       accessToken: ($('google-accessToken') as HTMLInputElement).value.trim(),
     },
     deepl: { apiKey: ($('deepl-apiKey') as HTMLInputElement).value.trim() },

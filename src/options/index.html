@@ -25,6 +25,7 @@
         cursor: pointer; border: none; border-radius: 6px; padding: 8px 16px;
         background: #1a73e8; color: #fff; font: inherit;
       }
+      button.secondary { background: transparent; color: #1a73e8; border: 1px solid #1a73e8; padding: 6px 12px; }
       #status { margin-left: 12px; color: #188038; font-size: 13px; }
     </style>
   </head>
@@ -69,10 +70,24 @@
         <label for="google-projectId">프로젝트 ID</label>
         <input id="google-projectId" type="text" placeholder="my-gcp-project" />
       </div>
+      <div class="field hidden" id="google-v3-authmode">
+        <label for="google-authMode">인증 방식</label>
+        <select id="google-authMode">
+          <option value="oauth">Chrome 계정 연결 (자동 갱신, 권장)</option>
+          <option value="token">액세스 토큰 직접 입력</option>
+        </select>
+      </div>
+      <div class="field hidden" id="google-v3-connect">
+        <label>Google 계정</label>
+        <div>
+          <button type="button" id="google-connect" class="secondary">Google 계정 연결</button>
+          <span id="google-connect-status" class="hint" style="grid-column:auto"></span>
+        </div>
+      </div>
       <div class="field hidden" id="google-v3-token">
         <label for="google-accessToken">액세스 토큰</label>
         <input id="google-accessToken" type="password" placeholder="ya29..." />
-        <div class="hint">gcloud auth application-default print-access-token 등으로 발급</div>
+        <div class="hint">gcloud auth application-default print-access-token 등으로 발급 (약 1시간 만료)</div>
       </div>
     </fieldset>
 

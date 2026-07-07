@@ -6,7 +6,13 @@ export default defineManifest({
   name: 'Uber Translate',
   version: pkg.version,
   description: pkg.description,
-  permissions: ['storage', 'activeTab', 'scripting', 'contextMenus'],
+  permissions: ['storage', 'activeTab', 'scripting', 'contextMenus', 'identity'],
+  // Google 번역 v3용 OAuth. GCP 콘솔에서 "Chrome 확장" 유형 OAuth 클라이언트를
+  // 이 확장 ID로 등록한 뒤 client_id를 아래에 넣으세요. (README 참고)
+  oauth2: {
+    client_id: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    scopes: ['https://www.googleapis.com/auth/cloud-translation'],
+  },
   host_permissions: [
     'https://translation.googleapis.com/*',
     'https://api-free.deepl.com/*',
