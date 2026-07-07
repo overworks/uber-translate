@@ -3,6 +3,7 @@ import { getSettings, saveSettings } from '../lib/settings'
 import { LANGUAGES } from '../lib/languages'
 import { PROVIDER_LABELS } from '../providers'
 import type { PageMessage } from '../lib/messaging'
+import { addHistory, getHistory, clearHistory, type HistoryEntry } from '../lib/history'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -64,6 +65,17 @@ $<HTMLButtonElement>('translate').addEventListener('click', async () => {
     )
     const out = res.translations[0] ?? ''
     showResult(out, { copyable: out.length > 0 })
+    if (out) {
+      void addHistory({
+        time: Date.now(),
+        source: text,
+        translated: out,
+        sourceLang: settings.sourceLang,
+        detectedSource: res.detectedSource,
+        target: targetSel.value,
+        provider: settings.activeProvider,
+      })
+    }
   } catch (e) {
     showResult(e instanceof Error ? e.message : String(e), { isError: true })
   }
@@ -88,3 +100,59 @@ $<HTMLButtonElement>('restorePage').addEventListener('click', () => {
   window.close()
 })
 $<HTMLAnchorElement>('openOptions').addEventListener('click', () => chrome.runtime.openOptionsPage())
+
+// ── 번역 이력 ──────────────────────────────────────────────
+const historyPanel = $<HTMLDivElement>('historyPanel')
+const historyList = $<HTMLDivElement>('historyList')
+const langLabel = (code: string) =>
+  code === 'auto' ? 'auto' : (LANGUAGES.find((l) => l.code === code)?.label ?? code)
+
+function renderHistory(entries: HistoryEntry[]) {
+  historyList.textContent = ''
+  if (entries.length === 0) {
+    const empty = document.createElement('div')
+    empty.className = 'hist-empty'
+    empty.textContent = '아직 번역 이력이 없습니다.'
+    historyList.appendChild(empty)
+    return
+  }
+  for (const e of entries) {
+    const item = document.createElement('div')
+    item.className = 'hist-item'
+    item.title = '클릭하면 위에 불러옵니다'
+
+    const dst = document.createElement('div')
+    dst.className = 'hist-dst'
+    dst.textContent = e.translated
+    const src = document.createElement('div')
+    src.className = 'hist-src'
+    src.textContent = e.source
+    const meta = document.createElement('div')
+    meta.className = 'hist-meta'
+    meta.textContent = `${langLabel(e.detectedSource ?? e.sourceLang)} → ${langLabel(e.target)} · ${
+      PROVIDER_LABELS[e.provider]
+    }`
+
+    item.append(dst, src, meta)
+    // 항목 클릭 → 원문·번역을 상단으로 불러오기
+    item.addEventListener('click', () => {
+      input.value = e.source
+      targetSel.value = e.target
+      showResult(e.translated, { copyable: e.translated.length > 0 })
+      historyPanel.classList.add('hidden')
+    })
+    historyList.appendChild(item)
+  }
+}
+
+async function toggleHistory() {
+  const willShow = historyPanel.classList.contains('hidden')
+  if (willShow) renderHistory(await getHistory())
+  historyPanel.classList.toggle('hidden')
+}
+
+$<HTMLAnchorElement>('toggleHistory').addEventListener('click', () => void toggleHistory())
+$<HTMLAnchorElement>('clearHistory').addEventListener('click', async () => {
+  await clearHistory()
+  renderHistory([])
+})

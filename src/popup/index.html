@@ -40,7 +40,26 @@
       .result-wrap.has-result .copy-btn { display: block; }
       .footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
       .provider { color: GrayText; font-size: 12px; }
+      .links { display: flex; gap: 12px; }
       a { color: #1a73e8; font-size: 12px; cursor: pointer; }
+      .history { margin-top: 10px; border-top: 1px solid GrayText; padding-top: 8px; }
+      .history-head {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 12px; color: GrayText; margin-bottom: 6px;
+      }
+      .hist-empty { color: GrayText; font-size: 12px; padding: 8px 0; }
+      .hist-item {
+        cursor: pointer; border: 1px solid GrayText; border-radius: 6px;
+        padding: 6px 8px; margin-bottom: 6px; background: Field; color: FieldText;
+      }
+      .hist-item:hover { border-color: #1a73e8; }
+      .hist-dst { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .hist-src {
+        font-size: 12px; color: GrayText; margin-top: 2px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .hist-meta { font-size: 11px; color: GrayText; margin-top: 4px; }
+      .hidden { display: none; }
     </style>
   </head>
   <body>
@@ -61,7 +80,17 @@
     </div>
     <div class="footer">
       <span class="provider" id="provider"></span>
-      <a id="openOptions">설정</a>
+      <div class="links">
+        <a id="toggleHistory">이력</a>
+        <a id="openOptions">설정</a>
+      </div>
+    </div>
+    <div id="historyPanel" class="history hidden">
+      <div class="history-head">
+        <span>번역 이력</span>
+        <a id="clearHistory">모두 지우기</a>
+      </div>
+      <div id="historyList"></div>
     </div>
     <script type="module" src="./main.ts"></script>
   </body>

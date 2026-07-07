@@ -1,5 +1,6 @@
 import { translate } from '../lib/translate-client'
 import { getSettings } from '../lib/settings'
+import { addHistory } from '../lib/history'
 
 const HOST_ID = 'uber-translate-root'
 
@@ -114,6 +115,15 @@ async function runTranslation(text: string, rect: DOMRect | null) {
       settings,
     )
     const out = result.translations[0] ?? ''
+    void addHistory({
+      time: Date.now(),
+      source: text,
+      translated: out,
+      sourceLang: settings.sourceLang,
+      detectedSource: result.detectedSource,
+      target: settings.targetLang,
+      provider: settings.activeProvider,
+    })
     tooltip.textContent = ''
     const body = document.createElement('div')
     body.textContent = out
