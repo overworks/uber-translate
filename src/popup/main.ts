@@ -9,6 +9,8 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const targetSel = $<HTMLSelectElement>('target')
 const input = $<HTMLTextAreaElement>('input')
 const result = $<HTMLDivElement>('result')
+const resultWrap = $<HTMLDivElement>('resultWrap')
+const copyBtn = $<HTMLButtonElement>('copy')
 const providerEl = $<HTMLSpanElement>('provider')
 
 for (const lang of LANGUAGES) {
@@ -32,10 +34,23 @@ targetSel.addEventListener('change', async () => {
   await saveSettings(settings)
 })
 
-function showResult(text: string, isError = false) {
+function showResult(text: string, { isError = false, copyable = false } = {}) {
   result.textContent = text
   result.classList.toggle('error', isError)
+  resultWrap.classList.toggle('has-result', copyable)
 }
+
+copyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(result.textContent ?? '')
+    const prev = copyBtn.textContent
+    copyBtn.textContent = '복사됨 ✓'
+    setTimeout(() => (copyBtn.textContent = prev), 1200)
+  } catch {
+    copyBtn.textContent = '복사 실패'
+    setTimeout(() => (copyBtn.textContent = '복사'), 1200)
+  }
+})
 
 $<HTMLButtonElement>('translate').addEventListener('click', async () => {
   const text = input.value.trim()
@@ -47,9 +62,10 @@ $<HTMLButtonElement>('translate').addEventListener('click', async () => {
       { text: [text], source: settings.sourceLang, target: targetSel.value },
       settings,
     )
-    showResult(res.translations[0] ?? '')
+    const out = res.translations[0] ?? ''
+    showResult(out, { copyable: out.length > 0 })
   } catch (e) {
-    showResult(e instanceof Error ? e.message : String(e), true)
+    showResult(e instanceof Error ? e.message : String(e), { isError: true })
   }
 })
 
@@ -59,7 +75,7 @@ async function sendToPage(msg: PageMessage) {
   try {
     await chrome.tabs.sendMessage(tab.id, msg)
   } catch {
-    showResult('이 페이지에서는 실행할 수 없습니다 (내부 페이지일 수 있음).', true)
+    showResult('이 페이지에서는 실행할 수 없습니다 (내부 페이지일 수 있음).', { isError: true })
   }
 }
 

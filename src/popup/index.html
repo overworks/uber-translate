@@ -31,6 +31,13 @@
       }
       button.secondary { background: transparent; color: #1a73e8; border: 1px solid #1a73e8; }
       .actions { display: flex; gap: 8px; }
+      .result-wrap { position: relative; }
+      .copy-btn {
+        position: absolute; top: 6px; right: 6px; display: none;
+        padding: 3px 8px; font-size: 12px; background: transparent;
+        color: #1a73e8; border: 1px solid #1a73e8;
+      }
+      .result-wrap.has-result .copy-btn { display: block; }
       .footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
       .provider { color: GrayText; font-size: 12px; }
       a { color: #1a73e8; font-size: 12px; cursor: pointer; }
@@ -48,7 +55,10 @@
       <button id="translatePage" class="secondary">이 페이지 번역</button>
       <button id="restorePage" class="secondary">원문 복원</button>
     </div>
-    <div id="result" class="result"></div>
+    <div class="result-wrap" id="resultWrap">
+      <button id="copy" class="copy-btn" title="번역 결과 복사">복사</button>
+      <div id="result" class="result"></div>
+    </div>
     <div class="footer">
       <span class="provider" id="provider"></span>
       <a id="openOptions">설정</a>

@@ -36,7 +36,14 @@ function ensureUi(): Ui {
       padding: 10px 12px; font: 400 13px/1.5 system-ui, sans-serif;
       box-shadow: 0 4px 16px rgba(0,0,0,.35); white-space: pre-wrap;
     }
-    .ut-tip .ut-meta { color: #9aa0a6; font-size: 11px; margin-top: 6px; }
+    .ut-tip .ut-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+    .ut-tip .ut-meta { color: #9aa0a6; font-size: 11px; }
+    .ut-tip .ut-copy {
+      cursor: pointer; background: transparent; color: #8ab4f8;
+      border: 1px solid #5f6368; border-radius: 5px; padding: 2px 8px;
+      font: 500 11px/1.2 system-ui, sans-serif; flex: none;
+    }
+    .ut-tip .ut-copy:hover { background: rgba(138,180,248,.12); }
     .ut-tip.ut-error { background: #5c1d1d; color: #ffd7d7; }
   `
   shadow.appendChild(style)
@@ -106,11 +113,33 @@ async function runTranslation(text: string, rect: DOMRect | null) {
       { text: [text], source: settings.sourceLang, target: settings.targetLang },
       settings,
     )
-    tooltip.textContent = result.translations[0] ?? ''
-    const meta = document.createElement('div')
+    const out = result.translations[0] ?? ''
+    tooltip.textContent = ''
+    const body = document.createElement('div')
+    body.textContent = out
+    tooltip.appendChild(body)
+
+    const foot = document.createElement('div')
+    foot.className = 'ut-foot'
+    const meta = document.createElement('span')
     meta.className = 'ut-meta'
     meta.textContent = `${result.detectedSource ?? settings.sourceLang} → ${settings.targetLang}`
-    tooltip.appendChild(meta)
+    foot.appendChild(meta)
+
+    const copy = document.createElement('button')
+    copy.className = 'ut-copy'
+    copy.textContent = '복사'
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(out)
+        copy.textContent = '복사됨 ✓'
+      } catch {
+        copy.textContent = '복사 실패'
+      }
+      setTimeout(() => (copy.textContent = '복사'), 1200)
+    })
+    foot.appendChild(copy)
+    tooltip.appendChild(foot)
   } catch (e) {
     tooltip.classList.add('ut-error')
     tooltip.textContent = e instanceof Error ? e.message : String(e)
