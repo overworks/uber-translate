@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uber Translate 설정</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        max-width: 640px; margin: 24px auto; padding: 0 16px;
+        font: 14px/1.6 system-ui, sans-serif; background: Canvas; color: CanvasText;
+      }
+      h1 { font-size: 18px; }
+      fieldset { border: 1px solid GrayText; border-radius: 8px; margin: 16px 0; padding: 12px 16px; }
+      legend { font-weight: 600; padding: 0 6px; }
+      .field { display: grid; grid-template-columns: 160px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
+      .field label { color: GrayText; font-size: 13px; }
+      input, select {
+        font: inherit; padding: 6px; border-radius: 6px; border: 1px solid GrayText;
+        background: Field; color: FieldText;
+      }
+      .hint { grid-column: 2; color: GrayText; font-size: 12px; margin-top: -4px; }
+      .hidden { display: none; }
+      button {
+        cursor: pointer; border: none; border-radius: 6px; padding: 8px 16px;
+        background: #1a73e8; color: #fff; font: inherit;
+      }
+      #status { margin-left: 12px; color: #188038; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>🌐 Uber Translate 설정</h1>
+
+    <fieldset>
+      <legend>번역 서비스</legend>
+      <div class="field">
+        <label for="provider">활성 서비스</label>
+        <select id="provider">
+          <option value="builtin">Chrome 내장 번역기 (키 불필요)</option>
+          <option value="google">Google 번역</option>
+          <option value="deepl">DeepL</option>
+          <option value="llm">LLM (OpenAI 호환)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sourceLang">출발 언어</label>
+        <select id="sourceLang"></select>
+      </div>
+      <div class="field">
+        <label for="targetLang">기본 대상 언어</label>
+        <select id="targetLang"></select>
+      </div>
+    </fieldset>
+
+    <fieldset id="google-config">
+      <legend>Google 번역</legend>
+      <div class="field">
+        <label for="google-version">API 버전</label>
+        <select id="google-version">
+          <option value="v2">v2 (API 키)</option>
+          <option value="v3">v3 (프로젝트 ID + 액세스 토큰)</option>
+        </select>
+      </div>
+      <div class="field" id="google-v2-key">
+        <label for="google-apiKey">API 키</label>
+        <input id="google-apiKey" type="password" placeholder="AIza..." />
+      </div>
+      <div class="field hidden" id="google-v3-project">
+        <label for="google-projectId">프로젝트 ID</label>
+        <input id="google-projectId" type="text" placeholder="my-gcp-project" />
+      </div>
+      <div class="field hidden" id="google-v3-token">
+        <label for="google-accessToken">액세스 토큰</label>
+        <input id="google-accessToken" type="password" placeholder="ya29..." />
+        <div class="hint">gcloud auth application-default print-access-token 등으로 발급</div>
+      </div>
+    </fieldset>
+
+    <fieldset id="deepl-config">
+      <legend>DeepL</legend>
+      <div class="field">
+        <label for="deepl-apiKey">Auth 키</label>
+        <input id="deepl-apiKey" type="password" placeholder="xxxx:fx (무료) 또는 Pro 키" />
+        <div class="hint">키가 ':fx'로 끝나면 무료 엔드포인트를 자동 사용</div>
+      </div>
+    </fieldset>
+
+    <fieldset id="llm-config">
+      <legend>LLM (OpenAI 호환)</legend>
+      <div class="field">
+        <label for="llm-baseUrl">Base URL</label>
+        <input id="llm-baseUrl" type="text" placeholder="https://api.openai.com/v1" />
+        <div class="hint">OpenAI, OpenRouter, Groq, LM Studio(http://localhost:1234/v1), Ollama(http://localhost:11434/v1) 등</div>
+      </div>
+      <div class="field">
+        <label for="llm-apiKey">API 키</label>
+        <input id="llm-apiKey" type="password" placeholder="sk-... (로컬 서버는 비워도 됨)" />
+      </div>
+      <div class="field">
+        <label for="llm-model">모델</label>
+        <input id="llm-model" type="text" placeholder="gpt-4o-mini" />
+      </div>
+    </fieldset>
+
+    <button id="save">저장</button>
+    <span id="status"></span>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

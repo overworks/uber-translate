@@ -1,0 +1,7 @@
+.ai/
+.agents/
+.claude/
+node_modules/
+dist/
+*.log
+.DS_Store

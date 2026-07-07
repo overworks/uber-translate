@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uber Translate</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        width: 340px; margin: 0; padding: 12px;
+        font: 14px/1.5 system-ui, sans-serif;
+        background: Canvas; color: CanvasText;
+      }
+      h1 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
+      .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+      .row label { color: GrayText; font-size: 12px; }
+      select, textarea, button { font: inherit; }
+      select { flex: 1; padding: 4px; border-radius: 6px; }
+      textarea {
+        width: 100%; box-sizing: border-box; min-height: 72px; resize: vertical;
+        border-radius: 6px; padding: 6px; border: 1px solid GrayText;
+      }
+      .result {
+        min-height: 40px; white-space: pre-wrap; background: Field; color: FieldText;
+        border-radius: 6px; padding: 8px; margin: 8px 0; border: 1px solid GrayText;
+      }
+      .result.error { border-color: #d93025; color: #d93025; }
+      button {
+        cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px;
+        background: #1a73e8; color: #fff;
+      }
+      button.secondary { background: transparent; color: #1a73e8; border: 1px solid #1a73e8; }
+      .actions { display: flex; gap: 8px; }
+      .footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+      .provider { color: GrayText; font-size: 12px; }
+      a { color: #1a73e8; font-size: 12px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <h1>🌐 Uber Translate</h1>
+    <div class="row">
+      <label>대상</label>
+      <select id="target"></select>
+    </div>
+    <textarea id="input" placeholder="번역할 텍스트를 입력하세요"></textarea>
+    <div class="actions">
+      <button id="translate">번역</button>
+      <button id="translatePage" class="secondary">이 페이지 번역</button>
+      <button id="restorePage" class="secondary">원문 복원</button>
+    </div>
+    <div id="result" class="result"></div>
+    <div class="footer">
+      <span class="provider" id="provider"></span>
+      <a id="openOptions">설정</a>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "uber-translate",
+  "version": "0.1.0",
+  "description": "번역 서비스(Google, DeepL, OpenAI 호환 LLM, Chrome 내장)를 직접 골라 쓰는 Chrome 번역 확장",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.28",
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  }
+}
