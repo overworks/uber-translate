@@ -25,33 +25,41 @@ function ensureUi(): Ui {
   style.textContent = `
     :host { all: initial; }
     .ut-btn {
-      position: absolute; display: none; cursor: pointer;
-      background: #1a73e8; color: #fff; border: none; border-radius: 6px;
-      padding: 4px 8px; font: 500 12px/1.2 system-ui, sans-serif;
-      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      position: absolute; display: none; align-items: center; gap: 5px; cursor: pointer;
+      background: linear-gradient(135deg, #6d6dff 0%, #5b5bd6 60%, #7c4dff 100%);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 6px 11px; font: 600 12px/1.2 system-ui, -apple-system, sans-serif;
+      box-shadow: 0 4px 14px rgba(91,91,214,.45); transition: transform .1s, box-shadow .15s;
     }
-    .ut-btn:hover { background: #1667c8; }
+    .ut-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(91,91,214,.55); }
+    .ut-btn:active { transform: translateY(0); }
+    .ut-btn svg { width: 13px; height: 13px; }
     .ut-tip {
       position: absolute; display: none; max-width: 360px;
-      background: #202124; color: #e8eaed; border-radius: 8px;
-      padding: 10px 12px; font: 400 13px/1.5 system-ui, sans-serif;
-      box-shadow: 0 4px 16px rgba(0,0,0,.35); white-space: pre-wrap;
+      background: #191b22; color: #e9eaee; border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 12px 14px;
+      font: 400 13px/1.55 system-ui, -apple-system, sans-serif;
+      box-shadow: 0 10px 34px rgba(0,0,0,.45); white-space: pre-wrap; word-break: break-word;
+      animation: ut-fade .18s ease;
     }
-    .ut-tip .ut-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
-    .ut-tip .ut-meta { color: #9aa0a6; font-size: 11px; }
+    @keyframes ut-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .ut-tip .ut-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(255,255,255,.08); }
+    .ut-tip .ut-meta { color: #9aa0ac; font: 600 10px/1 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .3px; text-transform: uppercase; }
     .ut-tip .ut-copy {
-      cursor: pointer; background: transparent; color: #8ab4f8;
-      border: 1px solid #5f6368; border-radius: 5px; padding: 2px 8px;
-      font: 500 11px/1.2 system-ui, sans-serif; flex: none;
+      cursor: pointer; background: rgba(155,155,244,.14); color: #b3b3f7;
+      border: 1px solid rgba(155,155,244,.3); border-radius: 7px; padding: 4px 10px;
+      font: 600 11px/1.2 system-ui, sans-serif; flex: none; transition: background .15s;
     }
-    .ut-tip .ut-copy:hover { background: rgba(138,180,248,.12); }
-    .ut-tip.ut-error { background: #5c1d1d; color: #ffd7d7; }
+    .ut-tip .ut-copy:hover { background: rgba(155,155,244,.24); }
+    .ut-tip.ut-error { background: #2a1618; border-color: rgba(255,99,105,.3); color: #ffc9cb; }
+    @media (prefers-reduced-motion: reduce) { .ut-tip { animation: none; } .ut-btn { transition: none; } }
   `
   shadow.appendChild(style)
 
   const button = document.createElement('button')
   button.className = 'ut-btn'
-  button.textContent = '번역'
+  button.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.7 8-6 8"/><path d="M5 9c0 2.5 3.6 4.5 6 4.5"/><path d="M13 21l4-9 4 9M14.5 17h5"/></svg>번역'
   shadow.appendChild(button)
 
   const tooltip = document.createElement('div')

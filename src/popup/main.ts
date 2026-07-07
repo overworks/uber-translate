@@ -12,6 +12,7 @@ const input = $<HTMLTextAreaElement>('input')
 const result = $<HTMLDivElement>('result')
 const resultWrap = $<HTMLDivElement>('resultWrap')
 const copyBtn = $<HTMLButtonElement>('copy')
+const copyLabel = copyBtn.querySelector('.copy-label') as HTMLSpanElement
 const providerEl = $<HTMLSpanElement>('provider')
 
 for (const lang of LANGUAGES) {
@@ -44,12 +45,11 @@ function showResult(text: string, { isError = false, copyable = false } = {}) {
 copyBtn.addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(result.textContent ?? '')
-    const prev = copyBtn.textContent
-    copyBtn.textContent = '복사됨 ✓'
-    setTimeout(() => (copyBtn.textContent = prev), 1200)
+    copyLabel.textContent = '복사됨 ✓'
+    setTimeout(() => (copyLabel.textContent = '복사'), 1200)
   } catch {
-    copyBtn.textContent = '복사 실패'
-    setTimeout(() => (copyBtn.textContent = '복사'), 1200)
+    copyLabel.textContent = '복사 실패'
+    setTimeout(() => (copyLabel.textContent = '복사'), 1200)
   }
 })
 

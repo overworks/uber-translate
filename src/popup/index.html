@@ -5,93 +5,270 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uber Translate</title>
     <style>
-      :root { color-scheme: light dark; }
+      /* ── Design tokens ─────────────────────────────────────── */
+      :root {
+        --bg: #f5f6f9;
+        --surface: #ffffff;
+        --surface-2: #eef0f5;
+        --text: #1b1d23;
+        --muted: #6b7280;
+        --border: #e3e6ec;
+        --accent: #5b5bd6;
+        --accent-hover: #4a4ac2;
+        --accent-ink: #ffffff;
+        --accent-soft: rgba(91, 91, 214, 0.1);
+        --danger: #e5484d;
+        --danger-soft: rgba(229, 72, 77, 0.1);
+        --ok: #30a46c;
+        --r: 12px;
+        --r-sm: 8px;
+        --shadow: 0 1px 2px rgba(16, 18, 27, 0.04), 0 8px 24px rgba(16, 18, 27, 0.08);
+        --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111318;
+          --surface: #1a1d24;
+          --surface-2: #22262f;
+          --text: #e9eaee;
+          --muted: #9aa0ac;
+          --border: #2b2f39;
+          --accent: #9b9bf4;
+          --accent-hover: #aeaef7;
+          --accent-ink: #14151d;
+          --accent-soft: rgba(155, 155, 244, 0.14);
+          --danger: #ff6369;
+          --danger-soft: rgba(255, 99, 105, 0.12);
+          --ok: #3dd68c;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+      }
+
+      * { box-sizing: border-box; }
       body {
-        width: 340px; margin: 0; padding: 12px;
-        font: 14px/1.5 system-ui, sans-serif;
-        background: Canvas; color: CanvasText;
+        width: 360px; margin: 0; padding: 14px;
+        font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: var(--bg); color: var(--text);
+        -webkit-font-smoothing: antialiased;
       }
-      h1 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
-      .row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-      .row label { color: GrayText; font-size: 12px; }
-      select, textarea, button { font: inherit; }
-      select { flex: 1; padding: 4px; border-radius: 6px; }
+
+      /* ── Top bar ───────────────────────────────────────────── */
+      .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+      .brand { display: flex; align-items: center; gap: 9px; }
+      .brand-mark {
+        display: grid; place-items: center; width: 26px; height: 26px;
+        border-radius: 8px; color: #fff; font: 700 12px/1 var(--mono);
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #6d6dff 0%, #5b5bd6 55%, #7c4dff 100%);
+        box-shadow: 0 2px 8px rgba(91, 91, 214, 0.4);
+      }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.2px; }
+      .icon-btn {
+        display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
+        border: none; border-radius: var(--r-sm); background: transparent;
+        color: var(--muted); cursor: pointer; transition: background 0.15s, color 0.15s;
+      }
+      .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+      .icon-btn svg { width: 17px; height: 17px; }
+
+      /* ── Language flow (signature) ─────────────────────────── */
+      .lang-flow {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+      }
+      .lang-chip {
+        font: 600 11px/1 var(--mono); letter-spacing: 0.3px; text-transform: uppercase;
+        color: var(--muted); background: var(--surface-2);
+        padding: 8px 10px; border-radius: var(--r-sm); white-space: nowrap;
+      }
+      .lang-arrow { color: var(--muted); flex: none; }
+      .lang-arrow svg { display: block; width: 16px; height: 16px; }
+      .select-wrap { position: relative; flex: 1; }
+      .select-wrap svg {
+        position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+        width: 14px; height: 14px; color: var(--muted); pointer-events: none;
+      }
+      select {
+        width: 100%; appearance: none; font: inherit; font-size: 13px;
+        padding: 8px 30px 8px 11px; border-radius: var(--r-sm);
+        border: 1px solid var(--border); background: var(--surface); color: var(--text);
+        cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      select:hover { border-color: var(--accent); }
+      select:focus-visible {
+        outline: none; border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+
+      /* ── Input ─────────────────────────────────────────────── */
       textarea {
-        width: 100%; box-sizing: border-box; min-height: 72px; resize: vertical;
-        border-radius: 6px; padding: 6px; border: 1px solid GrayText;
+        width: 100%; min-height: 84px; resize: vertical; font: inherit;
+        padding: 11px 12px; border-radius: var(--r);
+        border: 1px solid var(--border); background: var(--surface); color: var(--text);
+        transition: border-color 0.15s, box-shadow 0.15s;
       }
+      textarea::placeholder { color: var(--muted); }
+      textarea:focus-visible {
+        outline: none; border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+
+      /* ── Buttons ───────────────────────────────────────────── */
+      .btn {
+        font: inherit; font-weight: 600; cursor: pointer;
+        border-radius: var(--r-sm); border: 1px solid transparent;
+        transition: background 0.15s, border-color 0.15s, transform 0.08s, box-shadow 0.15s;
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+      .btn-primary {
+        width: 100%; margin-top: 10px; padding: 11px;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        background: var(--accent); color: var(--accent-ink);
+        box-shadow: 0 2px 10px rgba(91, 91, 214, 0.28);
+      }
+      .btn-primary:hover { background: var(--accent-hover); }
+      .btn-primary svg { width: 16px; height: 16px; }
+      .page-actions { display: flex; gap: 8px; margin-top: 8px; }
+      .btn-ghost {
+        flex: 1; padding: 8px 10px; font-size: 13px;
+        background: var(--surface); color: var(--text); border-color: var(--border);
+      }
+      .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+      /* ── Result ────────────────────────────────────────────── */
+      .result-wrap { position: relative; margin-top: 12px; }
       .result {
-        min-height: 40px; white-space: pre-wrap; background: Field; color: FieldText;
-        border-radius: 6px; padding: 8px; margin: 8px 0; border: 1px solid GrayText;
+        white-space: pre-wrap; word-break: break-word;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--r); padding: 12px 12px;
+        animation: fade 0.2s ease;
       }
-      .result.error { border-color: #d93025; color: #d93025; }
-      button {
-        cursor: pointer; border: none; border-radius: 6px; padding: 6px 10px;
-        background: #1a73e8; color: #fff;
+      .result:empty { display: none; }
+      .result.error {
+        border-color: var(--danger); background: var(--danger-soft); color: var(--danger);
       }
-      button.secondary { background: transparent; color: #1a73e8; border: 1px solid #1a73e8; }
-      .actions { display: flex; gap: 8px; }
-      .result-wrap { position: relative; }
+      @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
       .copy-btn {
-        position: absolute; top: 6px; right: 6px; display: none;
-        padding: 3px 8px; font-size: 12px; background: transparent;
-        color: #1a73e8; border: 1px solid #1a73e8;
+        position: absolute; top: 8px; right: 8px; display: none;
+        align-items: center; gap: 4px; padding: 4px 9px; font: 600 12px/1 inherit;
+        cursor: pointer; background: var(--surface-2); color: var(--muted);
+        border: 1px solid var(--border); border-radius: 6px; transition: color 0.15s, border-color 0.15s;
       }
-      .result-wrap.has-result .copy-btn { display: block; }
-      .footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-      .provider { color: GrayText; font-size: 12px; }
-      .links { display: flex; gap: 12px; }
-      a { color: #1a73e8; font-size: 12px; cursor: pointer; }
-      .history { margin-top: 10px; border-top: 1px solid GrayText; padding-top: 8px; }
+      .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+      .copy-btn svg { width: 13px; height: 13px; }
+      .result-wrap.has-result .copy-btn { display: inline-flex; }
+
+      /* ── Footer ────────────────────────────────────────────── */
+      .footer {
+        margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .provider {
+        font: 600 11px/1 var(--mono); color: var(--muted);
+        background: var(--surface-2); padding: 5px 9px; border-radius: 999px;
+      }
+      .provider:empty { display: none; }
+      .link {
+        font: inherit; font-size: 12px; font-weight: 600; color: var(--accent);
+        background: none; border: none; padding: 4px 2px; cursor: pointer;
+      }
+      .link:hover { color: var(--accent-hover); text-decoration: underline; }
+
+      /* ── History ───────────────────────────────────────────── */
+      .history { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
       .history-head {
         display: flex; justify-content: space-between; align-items: center;
-        font-size: 12px; color: GrayText; margin-bottom: 6px;
+        font-size: 12px; font-weight: 650; color: var(--muted); margin-bottom: 8px;
       }
-      .hist-empty { color: GrayText; font-size: 12px; padding: 8px 0; }
+      .hist-empty { color: var(--muted); font-size: 12px; padding: 12px 0; text-align: center; }
       .hist-item {
-        cursor: pointer; border: 1px solid GrayText; border-radius: 6px;
-        padding: 6px 8px; margin-bottom: 6px; background: Field; color: FieldText;
+        cursor: pointer; border: 1px solid var(--border); border-radius: var(--r-sm);
+        padding: 9px 11px; margin-bottom: 7px; background: var(--surface);
+        transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
       }
-      .hist-item:hover { border-color: #1a73e8; }
-      .hist-dst { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .hist-item:hover {
+        border-color: var(--accent); transform: translateX(2px); box-shadow: var(--shadow);
+      }
+      .hist-dst { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .hist-src {
-        font-size: 12px; color: GrayText; margin-top: 2px;
+        font-size: 12px; color: var(--muted); margin-top: 2px;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
-      .hist-meta { font-size: 11px; color: GrayText; margin-top: 4px; }
+      .hist-meta { font: 500 10px/1 var(--mono); letter-spacing: 0.2px; color: var(--muted); margin-top: 6px; text-transform: uppercase; }
       .hidden { display: none; }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+      }
     </style>
   </head>
   <body>
-    <h1>🌐 Uber Translate</h1>
-    <div class="row">
-      <label>대상</label>
-      <select id="target"></select>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">A文</span>
+        <span class="brand-name">Uber Translate</span>
+      </div>
+      <button class="icon-btn" id="openOptions" title="설정" aria-label="설정">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="lang-flow">
+      <span class="lang-chip">자동 감지</span>
+      <span class="lang-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </span>
+      <div class="select-wrap">
+        <select id="target" aria-label="대상 언어"></select>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </div>
     </div>
+
     <textarea id="input" placeholder="번역할 텍스트를 입력하세요"></textarea>
-    <div class="actions">
-      <button id="translate">번역</button>
-      <button id="translatePage" class="secondary">이 페이지 번역</button>
-      <button id="restorePage" class="secondary">원문 복원</button>
+
+    <button id="translate" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5h7M9 3v2c0 4.4-2.7 8-6 8" />
+        <path d="M5 9c0 2.5 3.6 4.5 6 4.5" />
+        <path d="M13 21l4-9 4 9M14.5 17h5" />
+      </svg>
+      번역
+    </button>
+    <div class="page-actions">
+      <button id="translatePage" class="btn btn-ghost">이 페이지 번역</button>
+      <button id="restorePage" class="btn btn-ghost">원문 복원</button>
     </div>
+
     <div class="result-wrap" id="resultWrap">
-      <button id="copy" class="copy-btn" title="번역 결과 복사">복사</button>
+      <button id="copy" class="copy-btn" title="번역 결과 복사">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+        <span class="copy-label">복사</span>
+      </button>
       <div id="result" class="result"></div>
     </div>
-    <div class="footer">
+
+    <footer class="footer">
       <span class="provider" id="provider"></span>
-      <div class="links">
-        <a id="toggleHistory">이력</a>
-        <a id="openOptions">설정</a>
-      </div>
-    </div>
-    <div id="historyPanel" class="history hidden">
+      <button class="link" id="toggleHistory">이력</button>
+    </footer>
+
+    <section id="historyPanel" class="history hidden">
       <div class="history-head">
         <span>번역 이력</span>
-        <a id="clearHistory">모두 지우기</a>
+        <button class="link" id="clearHistory">모두 지우기</button>
       </div>
       <div id="historyList"></div>
-    </div>
+    </section>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
