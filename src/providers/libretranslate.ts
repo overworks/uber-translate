@@ -3,6 +3,16 @@ import type { TranslationProvider } from './types'
 /** LibreTranslate — 오픈소스 self-host/공개 인스턴스. baseUrl + (선택) api_key */
 export const libreTranslateProvider: TranslationProvider = {
   id: 'libretranslate',
+  // 번역 대신 GET /languages로 인스턴스 도달·응답만 확인.
+  async test(settings) {
+    const { baseUrl } = settings.libretranslate
+    if (!baseUrl) throw new Error('LibreTranslate 인스턴스 URL이 필요합니다.')
+    const r = await fetch(`${baseUrl.replace(/\/+$/, '')}/languages`)
+    if (!r.ok) throw new Error(`LibreTranslate 오류 (${r.status}): ${await r.text()}`)
+    const data = await r.json().catch(() => null)
+    const n = Array.isArray(data) ? data.length : undefined
+    return n != null ? `언어 ${n}개 확인` : '연결 확인'
+  },
   async translate(req, settings) {
     const { baseUrl, apiKey } = settings.libretranslate
     if (!baseUrl) throw new Error('LibreTranslate 인스턴스 URL이 필요합니다.')

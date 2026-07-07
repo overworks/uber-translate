@@ -17,6 +17,19 @@ function extractJson(text: string): string {
  */
 export const llmProvider: TranslationProvider = {
   id: 'llm',
+  // 번역(토큰 소모) 대신 OpenAI 호환 표준 GET /models로 baseUrl·키만 검증한다.
+  async test(settings) {
+    const { baseUrl, apiKey } = settings.llm
+    if (!baseUrl) throw new Error('LLM base URL이 필요합니다.')
+    const url = `${baseUrl.replace(/\/$/, '')}/models`
+    const r = await fetch(url, {
+      headers: { ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
+    })
+    if (!r.ok) throw new Error(`LLM 오류 (${r.status}): ${await r.text()}`)
+    const data = await r.json().catch(() => null)
+    const n = Array.isArray(data?.data) ? data.data.length : undefined
+    return n != null ? `모델 ${n}개 확인` : '연결 확인'
+  },
   async translate(req, settings) {
     const { baseUrl, apiKey, model } = settings.llm
     if (!baseUrl) throw new Error('LLM base URL이 필요합니다.')

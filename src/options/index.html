@@ -27,6 +27,10 @@
       }
       button.secondary { background: transparent; color: #1a73e8; border: 1px solid #1a73e8; padding: 6px 12px; }
       #status { margin-left: 12px; color: #188038; font-size: 13px; }
+      .actions-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      #test-status { font-size: 13px; color: GrayText; }
+      #test-status.ok { color: #188038; }
+      #test-status.err { color: #d93025; }
     </style>
   </head>
   <body>
@@ -131,8 +135,15 @@
       </div>
     </fieldset>
 
-    <button id="save">저장</button>
-    <span id="status"></span>
+    <div class="actions-row">
+      <button id="save">저장</button>
+      <button id="test" class="secondary" type="button">연결 테스트</button>
+      <span id="status"></span>
+      <span id="test-status"></span>
+    </div>
+    <div class="hint" style="grid-column:auto; margin-top:6px">
+      "연결 테스트"는 현재 설정을 저장한 뒤 샘플 문장을 실제로 번역해 봅니다.
+    </div>
 
     <script type="module" src="./main.ts"></script>
   </body>

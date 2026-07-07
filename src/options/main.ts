@@ -1,6 +1,8 @@
 import { getSettings, saveSettings, type ProviderId, type Settings } from '../lib/settings'
 import { LANGUAGES, SOURCE_LANGUAGES } from '../lib/languages'
 import { getGoogleToken } from '../lib/google-auth'
+import { translate } from '../lib/translate-client'
+import { getProvider, PROVIDER_LABELS } from '../providers'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -84,9 +86,10 @@ async function ensureHostPermission(baseUrl: string): Promise<void> {
   }
 }
 
-$<HTMLButtonElement>('save').addEventListener('click', async () => {
+/** 현재 폼 값을 Settings로 수집 */
+async function collectSettings(): Promise<Settings> {
   const s = await getSettings()
-  const next: Settings = {
+  return {
     ...s,
     activeProvider: provider.value as ProviderId,
     sourceLang: sourceLang.value,
@@ -109,16 +112,57 @@ $<HTMLButtonElement>('save').addEventListener('click', async () => {
       model: ($('llm-model') as HTMLInputElement).value.trim(),
     },
   }
+}
 
+/** 저장 + (LLM/LibreTranslate) 런타임 host 권한 확보 */
+async function persist(next: Settings): Promise<void> {
   if (next.activeProvider === 'llm' && next.llm.baseUrl) {
     await ensureHostPermission(next.llm.baseUrl)
   }
   if (next.activeProvider === 'libretranslate' && next.libretranslate.baseUrl) {
     await ensureHostPermission(next.libretranslate.baseUrl)
   }
-
   await saveSettings(next)
+}
+
+$<HTMLButtonElement>('save').addEventListener('click', async () => {
+  await persist(await collectSettings())
   const status = $('status')
   status.textContent = '저장되었습니다 ✓'
   setTimeout(() => (status.textContent = ''), 2000)
+})
+
+// 연결 테스트 — 현재 설정을 저장한 뒤 샘플 문장을 실제로 번역해 본다.
+$<HTMLButtonElement>('test').addEventListener('click', async () => {
+  const out = $('test-status')
+  out.className = ''
+  out.textContent = '테스트 중…'
+  try {
+    const next = await collectSettings()
+    await persist(next) // background/직접 fetch가 동일 설정·권한을 쓰도록 먼저 저장
+    const label = PROVIDER_LABELS[next.activeProvider]
+    const provider = getProvider(next.activeProvider)
+
+    let detail: string
+    if (provider.test) {
+      // 경량 검증(예: LLM은 GET /models) — 실제 번역 없이 설정만 확인. 옵션 페이지는
+      // host 권한이 있으면 CORS 없이 직접 fetch 가능.
+      detail = await provider.test(next)
+    } else {
+      // 대상이 영어면 한국어 샘플로, 아니면 영어 샘플로 (같은 언어쌍 회피)
+      const toEnglish = next.targetLang.toLowerCase().startsWith('en')
+      const req = toEnglish
+        ? { text: ['안녕하세요'], source: 'ko', target: next.targetLang }
+        : { text: ['Hello'], source: 'en', target: next.targetLang }
+      const res = await translate(req, next)
+      const translated = res.translations[0] ?? ''
+      if (!translated) throw new Error('빈 응답을 받았습니다.')
+      detail = `"${translated}"`
+    }
+    out.className = 'ok'
+    out.textContent = `연결 성공 ✓ (${label}: ${detail})`
+  } catch (e) {
+    out.className = 'err'
+    out.textContent = `연결 실패: ${e instanceof Error ? e.message : String(e)}`
+  }
 })

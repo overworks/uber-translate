@@ -24,4 +24,10 @@ export interface TranslationProvider {
    */
   runsInPage?: boolean
   translate(req: TranslateRequest, settings: Settings): Promise<TranslateResult>
+  /**
+   * (선택) 실제 번역 없이 설정을 가볍게 검증한다.
+   * 성공 시 짧은 설명(예: "모델 12개 확인")을 반환하고, 실패 시 throw.
+   * 정의하지 않으면 연결 테스트는 샘플 문장 번역으로 대체된다.
+   */
+  test?(settings: Settings): Promise<string>
 }
