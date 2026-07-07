@@ -1,4 +1,4 @@
-export type ProviderId = 'builtin' | 'google' | 'deepl' | 'llm'
+export type ProviderId = 'builtin' | 'google' | 'deepl' | 'libretranslate' | 'llm'
 
 export interface GoogleConfig {
   apiVersion: 'v2' | 'v3'
@@ -13,6 +13,14 @@ export interface GoogleConfig {
 }
 
 export interface DeeplConfig {
+  apiKey: string
+}
+
+/** LibreTranslate — self-host/공개 인스턴스마다 URL·키가 다르므로 사용자 입력 */
+export interface LibreTranslateConfig {
+  /** 인스턴스 URL (예: http://localhost:5000, https://libretranslate.com) */
+  baseUrl: string
+  /** 인스턴스가 요구할 때만 필요 (공개 인스턴스 등) */
   apiKey: string
 }
 
@@ -31,6 +39,7 @@ export interface Settings {
   sourceLang: string
   google: GoogleConfig
   deepl: DeeplConfig
+  libretranslate: LibreTranslateConfig
   llm: LlmConfig
 }
 
@@ -40,6 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sourceLang: 'auto',
   google: { apiVersion: 'v2', apiKey: '', projectId: '', authMode: 'oauth', accessToken: '' },
   deepl: { apiKey: '' },
+  libretranslate: { baseUrl: '', apiKey: '' },
   llm: { baseUrl: 'https://api.openai.com/v1', apiKey: '', model: 'gpt-4o-mini' },
 }
 
@@ -54,6 +64,7 @@ export async function getSettings(): Promise<Settings> {
     ...stored,
     google: { ...DEFAULT_SETTINGS.google, ...stored.google },
     deepl: { ...DEFAULT_SETTINGS.deepl, ...stored.deepl },
+    libretranslate: { ...DEFAULT_SETTINGS.libretranslate, ...stored.libretranslate },
     llm: { ...DEFAULT_SETTINGS.llm, ...stored.llm },
   }
   // 마이그레이션: authMode 도입 이전에 저장된 v3 사용자는 조용히 OAuth로 바뀌면 안 되므로

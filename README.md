@@ -7,6 +7,7 @@
 - **Chrome 내장 번역기** — API 키 불필요, 온디바이스 (Chrome 138+ 데스크톱)
 - **Google 번역** — Cloud Translation v2(API 키) / v3(프로젝트 ID + 액세스 토큰)
 - **DeepL** — 무료(`:fx`)/Pro 자동 판별
+- **LibreTranslate** — 오픈소스 self-host/공개 인스턴스 (인스턴스 URL + 선택 API 키)
 - **LLM (OpenAI 호환)** — `baseUrl`/`apiKey`/`model`만 넣으면 OpenAI, OpenRouter,
   Groq, DeepSeek, LM Studio, Ollama(`/v1`), vLLM 등 어떤 호환 엔드포인트든 사용
 

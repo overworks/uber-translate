@@ -26,6 +26,7 @@ function updateVisibility() {
   const p = provider.value as ProviderId
   $('google-config').classList.toggle('hidden', p !== 'google')
   $('deepl-config').classList.toggle('hidden', p !== 'deepl')
+  $('libretranslate-config').classList.toggle('hidden', p !== 'libretranslate')
   $('llm-config').classList.toggle('hidden', p !== 'llm')
 
   const v3 = googleVersion.value === 'v3'
@@ -63,6 +64,8 @@ async function load() {
   ;($('google-projectId') as HTMLInputElement).value = s.google.projectId
   ;($('google-accessToken') as HTMLInputElement).value = s.google.accessToken
   ;($('deepl-apiKey') as HTMLInputElement).value = s.deepl.apiKey
+  ;($('libretranslate-baseUrl') as HTMLInputElement).value = s.libretranslate.baseUrl
+  ;($('libretranslate-apiKey') as HTMLInputElement).value = s.libretranslate.apiKey
   ;($('llm-baseUrl') as HTMLInputElement).value = s.llm.baseUrl
   ;($('llm-apiKey') as HTMLInputElement).value = s.llm.apiKey
   ;($('llm-model') as HTMLInputElement).value = s.llm.model
@@ -70,8 +73,8 @@ async function load() {
 }
 void load()
 
-/** LLM base URL 호스트에 대한 런타임 host 권한 요청 (optional_host_permissions) */
-async function ensureLlmPermission(baseUrl: string): Promise<void> {
+/** 사용자 입력 URL 호스트에 대한 런타임 host 권한 요청 (optional_host_permissions) */
+async function ensureHostPermission(baseUrl: string): Promise<void> {
   try {
     const origin = new URL(baseUrl).origin + '/*'
     const has = await chrome.permissions.contains({ origins: [origin] })
@@ -96,6 +99,10 @@ $<HTMLButtonElement>('save').addEventListener('click', async () => {
       accessToken: ($('google-accessToken') as HTMLInputElement).value.trim(),
     },
     deepl: { apiKey: ($('deepl-apiKey') as HTMLInputElement).value.trim() },
+    libretranslate: {
+      baseUrl: ($('libretranslate-baseUrl') as HTMLInputElement).value.trim(),
+      apiKey: ($('libretranslate-apiKey') as HTMLInputElement).value.trim(),
+    },
     llm: {
       baseUrl: ($('llm-baseUrl') as HTMLInputElement).value.trim(),
       apiKey: ($('llm-apiKey') as HTMLInputElement).value.trim(),
@@ -104,7 +111,10 @@ $<HTMLButtonElement>('save').addEventListener('click', async () => {
   }
 
   if (next.activeProvider === 'llm' && next.llm.baseUrl) {
-    await ensureLlmPermission(next.llm.baseUrl)
+    await ensureHostPermission(next.llm.baseUrl)
+  }
+  if (next.activeProvider === 'libretranslate' && next.libretranslate.baseUrl) {
+    await ensureHostPermission(next.libretranslate.baseUrl)
   }
 
   await saveSettings(next)

@@ -18,8 +18,9 @@ export default defineManifest({
     'https://api-free.deepl.com/*',
     'https://api.deepl.com/*',
   ],
-  // LLM base URL은 사용자가 자유롭게 입력하므로 optional로 두고 저장 시 런타임 요청한다.
-  optional_host_permissions: ['https://*/*', 'http://localhost/*', 'http://127.0.0.1/*'],
+  // LLM/LibreTranslate base URL은 사용자가 자유롭게 입력하므로(평문 HTTP self-host 포함)
+  // optional로 두고 저장 시 런타임 요청한다.
+  optional_host_permissions: ['https://*/*', 'http://*/*'],
   background: {
     service_worker: 'src/background/index.ts',
     type: 'module',

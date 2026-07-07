@@ -40,6 +40,7 @@
           <option value="builtin">Chrome 내장 번역기 (키 불필요)</option>
           <option value="google">Google 번역</option>
           <option value="deepl">DeepL</option>
+          <option value="libretranslate">LibreTranslate</option>
           <option value="llm">LLM (OpenAI 호환)</option>
         </select>
       </div>
@@ -97,6 +98,19 @@
         <label for="deepl-apiKey">Auth 키</label>
         <input id="deepl-apiKey" type="password" placeholder="xxxx:fx (무료) 또는 Pro 키" />
         <div class="hint">키가 ':fx'로 끝나면 무료 엔드포인트를 자동 사용</div>
+      </div>
+    </fieldset>
+
+    <fieldset id="libretranslate-config">
+      <legend>LibreTranslate</legend>
+      <div class="field">
+        <label for="libretranslate-baseUrl">인스턴스 URL</label>
+        <input id="libretranslate-baseUrl" type="text" placeholder="http://localhost:5000" />
+        <div class="hint">self-host 인스턴스 또는 공개 인스턴스(https://libretranslate.com 등)</div>
+      </div>
+      <div class="field">
+        <label for="libretranslate-apiKey">API 키</label>
+        <input id="libretranslate-apiKey" type="password" placeholder="인스턴스가 요구할 때만 입력" />
       </div>
     </fieldset>
 
