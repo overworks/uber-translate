@@ -74,7 +74,22 @@ export async function getSettings(): Promise<Settings> {
   if (stored.google && stored.google.authMode === undefined) {
     merged.google.authMode = stored.google.accessToken ? 'token' : 'oauth'
   }
+  // 저장된 activeProvider가 이 빌드에서 사용할 수 없으면(알 수 없는 값이거나,
+  // 심사용 빌드에서 제외된 'google') 기본값으로 되돌린다.
+  // 이렇게 하지 않으면 getProvider가 throw하거나 옵션 셀렉트가 빈 값이 되어
+  // 무효한 provider 상태가 저장될 수 있다.
+  if (!isAvailableProvider(merged.activeProvider)) {
+    merged.activeProvider = DEFAULT_SETTINGS.activeProvider
+  }
   return merged
+}
+
+/** 현재 빌드에서 선택 가능한 provider인지 검사한다. */
+function isAvailableProvider(id: unknown): id is ProviderId {
+  const available: ProviderId[] = __INCLUDE_GOOGLE__
+    ? ['builtin', 'google', 'deepl', 'libretranslate', 'llm']
+    : ['builtin', 'deepl', 'libretranslate', 'llm']
+  return typeof id === 'string' && (available as string[]).includes(id)
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {
