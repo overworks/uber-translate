@@ -195,6 +195,10 @@
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
       .hist-meta { font: 500 10px/1 var(--mono); letter-spacing: 0.2px; color: var(--muted); margin-top: 6px; text-transform: uppercase; }
+      /* Google 어트리뷰션 (google provider일 때만) */
+      .attribution { margin-top: 8px; }
+      .attribution a { display: inline-flex; opacity: 0.75; transition: opacity 0.15s; }
+      .attribution a:hover { opacity: 1; }
       .hidden { display: none; }
 
       @media (prefers-reduced-motion: reduce) {
@@ -255,6 +259,7 @@
       </button>
       <div id="result" class="result"></div>
     </div>
+    <div id="attribution" class="attribution hidden"></div>
 
     <footer class="footer">
       <span class="provider" id="provider"></span>

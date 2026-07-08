@@ -116,6 +116,14 @@
       #test-status.ok { color: var(--ok); }
       #test-status.err { color: var(--danger); }
       .test-note { color: var(--muted); font-size: 12px; margin-top: 10px; }
+      /* Google 어트리뷰션 (google provider일 때만) */
+      .google-legal {
+        margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--border);
+        border-radius: var(--r); background: var(--surface); box-shadow: var(--shadow);
+      }
+      .google-legal .badge { display: inline-flex; margin-bottom: 8px; }
+      .google-legal .disclaimer { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+      .google-legal a { color: var(--accent); }
 
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
@@ -233,6 +241,14 @@
         <input id="llm-model" type="text" placeholder="gpt-4o-mini" />
       </div>
     </fieldset>
+
+    <div id="google-legal" class="google-legal hidden">
+      <div class="badge" id="google-badge"></div>
+      <p class="disclaimer">
+        번역은 <a href="https://cloud.google.com/translate" target="_blank" rel="noopener noreferrer">Google Cloud Translation</a>으로 제공됩니다.
+        <span id="google-disclaimer"></span>
+      </p>
+    </div>
 
     <div class="actions-row">
       <button id="save">저장</button>

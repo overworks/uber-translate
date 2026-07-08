@@ -4,6 +4,7 @@ import { LANGUAGES } from '../lib/languages'
 import { PROVIDER_LABELS } from '../providers'
 import type { PageMessage } from '../lib/messaging'
 import { addHistory, getHistory, clearHistory, type HistoryEntry } from '../lib/history'
+import { googleBadge } from '../lib/attribution'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -14,6 +15,7 @@ const resultWrap = $<HTMLDivElement>('resultWrap')
 const copyBtn = $<HTMLButtonElement>('copy')
 const copyLabel = copyBtn.querySelector('.copy-label') as HTMLSpanElement
 const providerEl = $<HTMLSpanElement>('provider')
+const attribution = $<HTMLDivElement>('attribution')
 
 for (const lang of LANGUAGES) {
   const opt = document.createElement('option')
@@ -26,6 +28,11 @@ async function init() {
   const settings = await getSettings()
   targetSel.value = settings.targetLang
   providerEl.textContent = PROVIDER_LABELS[settings.activeProvider]
+  // Google 사용 시 결과 인접 어트리뷰션 배지 표시 (Google 요구사항)
+  if (settings.activeProvider === 'google') {
+    attribution.replaceChildren(googleBadge('color'))
+    attribution.classList.remove('hidden')
+  }
 }
 void init()
 

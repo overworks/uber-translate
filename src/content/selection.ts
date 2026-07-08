@@ -1,6 +1,10 @@
 import { translate } from '../lib/translate-client'
-import { getSettings } from '../lib/settings'
+import { getSettings, onSettingsChanged, type ProviderId } from '../lib/settings'
 import { addHistory } from '../lib/history'
+import { googleBadge } from '../lib/attribution'
+
+// 플로팅 트리거 버튼/배지를 provider에 맞게 그리기 위해 활성 provider를 캐시.
+let activeProvider: ProviderId = 'builtin'
 
 const HOST_ID = 'uber-translate-root'
 
@@ -8,6 +12,7 @@ interface Ui {
   root: HTMLElement
   shadow: ShadowRoot
   button: HTMLButtonElement
+  attrib: HTMLDivElement
   tooltip: HTMLDivElement
 }
 
@@ -34,6 +39,11 @@ function ensureUi(): Ui {
     .ut-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(91,91,214,.55); }
     .ut-btn:active { transform: translateY(0); }
     .ut-btn svg { width: 13px; height: 13px; }
+    .ut-attrib {
+      position: absolute; display: none; background: #191b22;
+      padding: 5px 8px; border-radius: 7px; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.08);
+    }
     .ut-tip {
       position: absolute; display: none; max-width: 360px;
       background: #191b22; color: #e9eaee; border: 1px solid rgba(255,255,255,.08);
@@ -62,13 +72,19 @@ function ensureUi(): Ui {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.7 8-6 8"/><path d="M5 9c0 2.5 3.6 4.5 6 4.5"/><path d="M13 21l4-9 4 9M14.5 17h5"/></svg>번역'
   shadow.appendChild(button)
 
+  // Google 사용 시 트리거 버튼 옆에 붙는 공식 어트리뷰션 배지 (Google 요구사항)
+  const attrib = document.createElement('div')
+  attrib.className = 'ut-attrib'
+  attrib.appendChild(googleBadge('white'))
+  shadow.appendChild(attrib)
+
   const tooltip = document.createElement('div')
   tooltip.className = 'ut-tip'
   shadow.appendChild(tooltip)
 
   document.documentElement.appendChild(root)
 
-  ui = { root, shadow, button, tooltip }
+  ui = { root, shadow, button, attrib, tooltip }
 
   button.addEventListener('mousedown', (e) => e.preventDefault()) // 선택 해제 방지
   button.addEventListener('click', () => {
@@ -94,15 +110,26 @@ function pageXY(rect: DOMRect) {
 }
 
 function showButton(rect: DOMRect) {
-  const { button } = ensureUi()
+  const { button, attrib } = ensureUi()
   const { x, bottom } = pageXY(rect)
   button.style.left = `${x}px`
   button.style.top = `${bottom + 6}px`
-  button.style.display = 'block'
+  button.style.display = 'inline-flex'
+  // Google일 때만 트리거 옆에 어트리뷰션 배지 노출
+  if (activeProvider === 'google') {
+    attrib.style.left = `${x}px`
+    attrib.style.top = `${bottom + 6 + button.offsetHeight + 5}px`
+    attrib.style.display = 'block'
+  } else {
+    attrib.style.display = 'none'
+  }
 }
 
 function hideButton() {
-  if (ui) ui.button.style.display = 'none'
+  if (ui) {
+    ui.button.style.display = 'none'
+    ui.attrib.style.display = 'none'
+  }
 }
 
 function hide() {
@@ -158,6 +185,13 @@ async function runTranslation(text: string, rect: DOMRect | null) {
     })
     foot.appendChild(copy)
     tooltip.appendChild(foot)
+
+    // Google 사용 시 결과 인접 어트리뷰션 배지 (Google 요구사항)
+    if (settings.activeProvider === 'google') {
+      const badge = googleBadge('white')
+      badge.style.cssText += 'margin-top:8px;opacity:.9;'
+      tooltip.appendChild(badge)
+    }
   } catch (e) {
     tooltip.classList.add('ut-error')
     tooltip.textContent = e instanceof Error ? e.message : String(e)
@@ -175,6 +209,10 @@ function positionTooltip(rect: DOMRect | null) {
 
 /** 선택 영역 감지 → 번역 버튼 노출 */
 export function initSelection(): void {
+  // 트리거 버튼 어트리뷰션 판단용 provider 캐시 (변경 시 갱신)
+  void getSettings().then((s) => (activeProvider = s.activeProvider))
+  onSettingsChanged((s) => (activeProvider = s.activeProvider))
+
   document.addEventListener('mouseup', (e) => {
     // 우리 UI 내부 클릭은 무시
     if (ui && e.composedPath().includes(ui.root)) return

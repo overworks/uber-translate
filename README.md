@@ -45,6 +45,16 @@ v3의 액세스 토큰은 약 1시간이면 만료됩니다. `chrome.identity`�
 이후로는 토큰이 만료돼도 자동 갱신되며, 401 발생 시 확장이 캐시를 비우고 재발급합니다.
 간단하게 쓰려면 v3 대신 **v2(API 키)** 를 쓰면 만료·OAuth 설정이 전혀 없습니다.
 
+## Google 번역 어트리뷰션
+
+**Google 번역(Cloud Translation)** provider를 선택하면 번역은 Google Cloud
+Translation으로 제공됩니다. Google의 [어트리뷰션 요건](https://cloud.google.com/translate/attribution)에
+따라, 이 provider가 활성일 때만 번역 결과 옆에 공식 **"powered by Google
+Translate"** 배지(→ `translate.google.com` 링크)와 보증 부인 문구를 표시합니다
+(팝업·선택 툴팁·전체 페이지 배지·설정 페이지). 다른 provider를 쓸 때는 표시하지
+않습니다. 배지 에셋은 Google 공식 배지를 무수정으로 사용합니다
+(`src/lib/attribution.ts`).
+
 ## 아키텍처
 
 - 네트워크 provider(Google/DeepL/LLM)는 **background service worker**에서 실행해 CORS 회피
