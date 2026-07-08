@@ -140,8 +140,25 @@ $<HTMLButtonElement>('save').addEventListener('click', async () => {
   setTimeout(() => (status.textContent = ''), 2000)
 })
 
-// 연결 테스트 — 현재 설정을 저장한 뒤 샘플 문장을 실제로 번역해 본다.
-$<HTMLButtonElement>('test').addEventListener('click', async () => {
+// 대상 언어가 영어면 한국어 샘플, 아니면 영어 샘플 (같은 언어쌍 회피)로 실제 번역
+async function sampleTranslate(next: Settings): Promise<string> {
+  const toEnglish = next.targetLang.toLowerCase().startsWith('en')
+  const req = toEnglish
+    ? { text: ['안녕하세요'], source: 'ko', target: next.targetLang }
+    : { text: ['Hello'], source: 'en', target: next.targetLang }
+  const res = await translate(req, next)
+  const translated = res.translations[0] ?? ''
+  if (!translated) throw new Error('빈 응답을 받았습니다.')
+  return `"${translated}"`
+}
+
+/**
+ * 테스트 실행 — 현재 설정을 저장한 뒤 검증한다.
+ * - connection: provider의 경량 test()(예: LLM은 GET /models)로 실제 번역 없이 설정만 확인.
+ *   test()가 없는 provider는 자동으로 샘플 번역으로 폴백.
+ * - translate: 언제나 샘플 문장을 실제로 번역해 결과를 보여줌.
+ */
+async function runTest(mode: 'connection' | 'translate') {
   const out = $('test-status')
   out.className = ''
   out.textContent = '테스트 중…'
@@ -151,26 +168,21 @@ $<HTMLButtonElement>('test').addEventListener('click', async () => {
     const label = PROVIDER_LABELS[next.activeProvider]
     const provider = getProvider(next.activeProvider)
 
-    let detail: string
-    if (provider.test) {
-      // 경량 검증(예: LLM은 GET /models) — 실제 번역 없이 설정만 확인. 옵션 페이지는
-      // host 권한이 있으면 CORS 없이 직접 fetch 가능.
-      detail = await provider.test(next)
-    } else {
-      // 대상이 영어면 한국어 샘플로, 아니면 영어 샘플로 (같은 언어쌍 회피)
-      const toEnglish = next.targetLang.toLowerCase().startsWith('en')
-      const req = toEnglish
-        ? { text: ['안녕하세요'], source: 'ko', target: next.targetLang }
-        : { text: ['Hello'], source: 'en', target: next.targetLang }
-      const res = await translate(req, next)
-      const translated = res.translations[0] ?? ''
-      if (!translated) throw new Error('빈 응답을 받았습니다.')
-      detail = `"${translated}"`
-    }
+    // 옵션 페이지는 host 권한이 있으면 CORS 없이 직접 fetch 가능.
+    const detail =
+      mode === 'connection' && provider.test
+        ? await provider.test(next)
+        : await sampleTranslate(next)
+
     out.className = 'ok'
-    out.textContent = `연결 성공 ✓ (${label}: ${detail})`
+    out.textContent = `${mode === 'translate' ? '번역 성공' : '연결 성공'} ✓ (${label}: ${detail})`
   } catch (e) {
     out.className = 'err'
-    out.textContent = `연결 실패: ${e instanceof Error ? e.message : String(e)}`
+    out.textContent = `${mode === 'translate' ? '번역 실패' : '연결 실패'}: ${
+      e instanceof Error ? e.message : String(e)
+    }`
   }
-})
+}
+
+$<HTMLButtonElement>('test').addEventListener('click', () => void runTest('connection'))
+$<HTMLButtonElement>('test-translate').addEventListener('click', () => void runTest('translate'))
