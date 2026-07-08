@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Uber Translate 브랜드 마크: 아이리스 그라디언트 타일 + A文 (스크립트 간 번역) -->
+  <!-- 이 파일이 로고 원본. PNG는 scripts/gen-icons.sh 로 생성 -->
+  <defs>
+    <linearGradient id="iris" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6D6DFF"/>
+      <stop offset="0.55" stop-color="#5B5BD6"/>
+      <stop offset="1" stop-color="#7C4DFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="14" width="484" height="484" rx="112" fill="url(#iris)"/>
+  <text x="252" y="272" fill="#ffffff" text-anchor="middle" dominant-baseline="central"
+        font-family="Noto Sans CJK KR, 'Apple SD Gothic Neo', sans-serif"
+        font-weight="900" font-size="200" letter-spacing="-6">A文</text>
+</svg>

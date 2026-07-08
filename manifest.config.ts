@@ -6,6 +6,12 @@ export default defineManifest({
   name: 'Uber Translate',
   version: pkg.version,
   description: pkg.description,
+  icons: {
+    16: 'src/icons/icon-16.png',
+    32: 'src/icons/icon-32.png',
+    48: 'src/icons/icon-48.png',
+    128: 'src/icons/icon-128.png',
+  },
   permissions: ['storage', 'activeTab', 'scripting', 'contextMenus', 'identity'],
   // Google 번역 v3용 OAuth. GCP 콘솔에서 "Chrome 확장" 유형 OAuth 클라이언트를
   // 이 확장 ID로 등록한 뒤 client_id를 아래에 넣으세요. (README 참고)
@@ -35,6 +41,12 @@ export default defineManifest({
   action: {
     default_popup: 'src/popup/index.html',
     default_title: 'Uber Translate',
+    default_icon: {
+      16: 'src/icons/icon-16.png',
+      32: 'src/icons/icon-32.png',
+      48: 'src/icons/icon-48.png',
+      128: 'src/icons/icon-128.png',
+    },
   },
   options_page: 'src/options/index.html',
 })
