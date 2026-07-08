@@ -79,6 +79,7 @@ async function load() {
   ;($('llm-baseUrl') as HTMLInputElement).value = s.llm.baseUrl
   ;($('llm-apiKey') as HTMLInputElement).value = s.llm.apiKey
   ;($('llm-model') as HTMLInputElement).value = s.llm.model
+  ;($('llm-prompt') as HTMLTextAreaElement).value = s.llm.prompt
   updateVisibility()
 }
 void load()
@@ -118,6 +119,7 @@ async function collectSettings(): Promise<Settings> {
       baseUrl: ($('llm-baseUrl') as HTMLInputElement).value.trim(),
       apiKey: ($('llm-apiKey') as HTMLInputElement).value.trim(),
       model: ($('llm-model') as HTMLInputElement).value.trim(),
+      prompt: ($('llm-prompt') as HTMLTextAreaElement).value.trim(),
     },
   }
 }

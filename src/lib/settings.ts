@@ -29,6 +29,8 @@ export interface LlmConfig {
   baseUrl: string
   apiKey: string
   model: string
+  /** (선택) system 프롬프트. 비어있으면 기본 프롬프트 사용. {{target}}/{{source}} 치환 지원 */
+  prompt: string
 }
 
 export interface Settings {
@@ -50,7 +52,7 @@ export const DEFAULT_SETTINGS: Settings = {
   google: { apiVersion: 'v2', apiKey: '', projectId: '', authMode: 'oauth', accessToken: '' },
   deepl: { apiKey: '' },
   libretranslate: { baseUrl: '', apiKey: '' },
-  llm: { baseUrl: 'https://api.openai.com/v1', apiKey: '', model: 'gpt-4o-mini' },
+  llm: { baseUrl: 'https://api.openai.com/v1', apiKey: '', model: 'gpt-4o-mini', prompt: '' },
 }
 
 const KEY = 'settings'

@@ -73,14 +73,15 @@
       }
       .field { display: grid; grid-template-columns: 170px 1fr; gap: 10px; align-items: center; margin: 14px 0; }
       .field label { color: var(--muted); font-size: 13px; font-weight: 500; }
-      input, select {
+      input, select, textarea {
         font: inherit; font-size: 13px; padding: 9px 11px; border-radius: var(--r-sm);
         border: 1px solid var(--border); background: var(--bg); color: var(--text);
         transition: border-color 0.15s, box-shadow 0.15s;
       }
-      input::placeholder { color: var(--muted); }
-      input:hover, select:hover { border-color: var(--accent); }
-      input:focus-visible, select:focus-visible {
+      textarea { resize: vertical; min-height: 76px; line-height: 1.5; }
+      input::placeholder, textarea::placeholder { color: var(--muted); }
+      input:hover, select:hover, textarea:hover { border-color: var(--accent); }
+      input:focus-visible, select:focus-visible, textarea:focus-visible {
         outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
       }
       select { appearance: none; cursor: pointer;
@@ -88,6 +89,10 @@
         background-repeat: no-repeat; background-position: right 11px center; padding-right: 32px;
       }
       .hint { grid-column: 2; color: var(--muted); font-size: 12px; margin-top: -4px; }
+      .hint code {
+        font: 600 11px/1 var(--mono); padding: 2px 5px; border-radius: 5px;
+        background: var(--surface-2); color: var(--accent);
+      }
       .hidden { display: none; }
 
       /* ── Buttons ───────────────────────────────────────────── */
@@ -239,6 +244,14 @@
       <div class="field">
         <label for="llm-model">모델</label>
         <input id="llm-model" type="text" placeholder="gpt-4o-mini" />
+      </div>
+      <div class="field">
+        <label for="llm-prompt">system 프롬프트</label>
+        <textarea id="llm-prompt" placeholder="비워두면 기본 프롬프트 사용"></textarea>
+        <div class="hint">
+          비워두면 기본 번역 프롬프트를 사용합니다. <code>{{target}}</code>·<code>{{source}}</code>는
+          번역 시 대상/출발 언어 코드로 치환됩니다.
+        </div>
       </div>
     </fieldset>
 

@@ -1,5 +1,13 @@
 import type { TranslationProvider } from './types'
 
+/** 대상 언어를 넣은 기본 system 프롬프트 (설정에서 비워두면 이것을 사용) */
+export function defaultLlmPrompt(target: string): string {
+  return (
+    `You are a professional translation engine. Translate the user's content into ${target}. ` +
+    `Output ONLY the translation — no explanations, no quotes, no commentary. Preserve inline whitespace.`
+  )
+}
+
 /** ```json ... ``` 코드펜스나 앞뒤 텍스트에서 JSON 배열/객체만 추출 */
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i)
@@ -31,15 +39,19 @@ export const llmProvider: TranslationProvider = {
     return n != null ? `모델 ${n}개 확인` : '연결 확인'
   },
   async translate(req, settings) {
-    const { baseUrl, apiKey, model } = settings.llm
+    const { baseUrl, apiKey, model, prompt } = settings.llm
     if (!baseUrl) throw new Error('LLM base URL이 필요합니다.')
     if (!model) throw new Error('LLM 모델명이 필요합니다.')
 
     const target = req.target
     const isBatch = req.text.length > 1
-    const system =
-      `You are a professional translation engine. Translate the user's content into ${target}. ` +
-      `Output ONLY the translation — no explanations, no quotes, no commentary. Preserve inline whitespace.`
+    // 사용자 지정 프롬프트가 있으면 {{target}}/{{source}} 치환 후 사용, 없으면 기본값
+    const custom = prompt?.trim()
+    const system = custom
+      ? custom
+          .replace(/\{\{\s*target\s*\}\}/gi, target)
+          .replace(/\{\{\s*source\s*\}\}/gi, req.source ?? 'auto')
+      : defaultLlmPrompt(target)
     const user = isBatch
       ? `Translate every string in this JSON array into ${target}. ` +
         `Return ONLY a JSON array of strings with the SAME length and SAME order, translations only:\n` +
