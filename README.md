@@ -9,7 +9,12 @@
 - **DeepL** — 무료(`:fx`)/Pro 자동 판별
 - **LibreTranslate** — 오픈소스 self-host/공개 인스턴스 (인스턴스 URL + 선택 API 키)
 - **LLM (OpenAI 호환)** — `baseUrl`/`apiKey`/`model`만 넣으면 OpenAI, OpenRouter,
-  Groq, DeepSeek, LM Studio, Ollama(`/v1`), vLLM 등 어떤 호환 엔드포인트든 사용
+  Groq, DeepSeek, LM Studio, Ollama(`/v1`), vLLM 등 어떤 호환 엔드포인트든 사용.
+  설정에서 system 프롬프트를 직접 지정할 수 있고(비우면 기본값), `{{target}}`·`{{source}}`가
+  번역 시 대상/출발 언어 코드로 치환됩니다.
+  - **Ollama 로컬 사용 시 주의**: Ollama는 기본적으로 `127.0.0.1`/`0.0.0.0` 외의 origin을
+    차단하므로, 확장에서 호출하면 **403**이 납니다. `OLLAMA_ORIGINS=chrome-extension://*`로
+    Ollama를 실행(또는 systemd `Environment=`에 추가 후 재시작)하면 해결됩니다.
 
 ## 번역 방식
 
