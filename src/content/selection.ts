@@ -1,7 +1,7 @@
 import { translate } from '../lib/translate-client'
 import { getSettings, onSettingsChanged, type ProviderId } from '../lib/settings'
 import { addHistory } from '../lib/history'
-import { googleBadge } from '../lib/attribution'
+import { attributionBadge } from '../lib/attribution'
 
 // 플로팅 트리거 버튼/배지를 provider에 맞게 그리기 위해 활성 provider를 캐시.
 let activeProvider: ProviderId = 'builtin'
@@ -72,10 +72,9 @@ function ensureUi(): Ui {
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4.4-2.7 8-6 8"/><path d="M5 9c0 2.5 3.6 4.5 6 4.5"/><path d="M13 21l4-9 4 9M14.5 17h5"/></svg>번역'
   shadow.appendChild(button)
 
-  // Google 사용 시 트리거 버튼 옆에 붙는 공식 어트리뷰션 배지 (Google 요구사항)
+  // Google/DeepL 사용 시 트리거 버튼 옆에 붙는 어트리뷰션 배지 (provider 요구사항)
   const attrib = document.createElement('div')
   attrib.className = 'ut-attrib'
-  attrib.appendChild(googleBadge('white'))
   shadow.appendChild(attrib)
 
   const tooltip = document.createElement('div')
@@ -115,8 +114,10 @@ function showButton(rect: DOMRect) {
   button.style.left = `${x}px`
   button.style.top = `${bottom + 6}px`
   button.style.display = 'inline-flex'
-  // Google일 때만 트리거 옆에 어트리뷰션 배지 노출
-  if (activeProvider === 'google') {
+  // Google/DeepL일 때만 트리거 옆에 어트리뷰션 배지 노출
+  const badge = attributionBadge(activeProvider, 'white')
+  if (badge) {
+    attrib.replaceChildren(badge)
     attrib.style.left = `${x}px`
     attrib.style.top = `${bottom + 6 + button.offsetHeight + 5}px`
     attrib.style.display = 'block'
@@ -186,9 +187,9 @@ async function runTranslation(text: string, rect: DOMRect | null) {
     foot.appendChild(copy)
     tooltip.appendChild(foot)
 
-    // Google 사용 시 결과 인접 어트리뷰션 배지 (Google 요구사항)
-    if (settings.activeProvider === 'google') {
-      const badge = googleBadge('white')
+    // Google/DeepL 사용 시 결과 인접 어트리뷰션 배지 (provider 요구사항)
+    const badge = attributionBadge(settings.activeProvider, 'white')
+    if (badge) {
       badge.style.cssText += 'margin-top:8px;opacity:.9;'
       tooltip.appendChild(badge)
     }

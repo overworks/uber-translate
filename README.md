@@ -45,15 +45,21 @@ v3의 액세스 토큰은 약 1시간이면 만료됩니다. `chrome.identity`�
 이후로는 토큰이 만료돼도 자동 갱신되며, 401 발생 시 확장이 캐시를 비우고 재발급합니다.
 간단하게 쓰려면 v3 대신 **v2(API 키)** 를 쓰면 만료·OAuth 설정이 전혀 없습니다.
 
-## Google 번역 어트리뷰션
+## 번역 서비스 어트리뷰션
 
-**Google 번역(Cloud Translation)** provider를 선택하면 번역은 Google Cloud
-Translation으로 제공됩니다. Google의 [어트리뷰션 요건](https://cloud.google.com/translate/attribution)에
-따라, 이 provider가 활성일 때만 번역 결과 옆에 공식 **"powered by Google
-Translate"** 배지(→ `translate.google.com` 링크)와 보증 부인 문구를 표시합니다
-(팝업·선택 툴팁·전체 페이지 배지·설정 페이지). 다른 provider를 쓸 때는 표시하지
-않습니다. 배지 에셋은 Google 공식 배지를 무수정으로 사용합니다
-(`src/lib/attribution.ts`).
+일부 provider는 번역물 노출 시 출처 표기를 요구합니다. 해당 provider가 **활성일
+때만** 번역 결과·트리거 옆에 조건부로 배지를 표시하며(팝업·선택 툴팁·전체 페이지·
+설정 페이지), 다른 provider에서는 표시하지 않습니다. 관련 코드는
+`src/lib/attribution.ts` 한 곳에 모여 있습니다.
+
+- **Google (Cloud Translation)** — [어트리뷰션 요건](https://cloud.google.com/translate/attribution)에
+  따라 공식 **"powered by Google Translate"** 배지(→ `translate.google.com`)와
+  보증 부인 문구를 표시. 배지는 Google 공식 에셋 무수정 사용.
+- **DeepL** — [Pro License §8.3.3](https://www.deepl.com/en/pro-license)에 따라
+  수정 없이 노출되는 번역물에 **브랜드명(도메인 포함)** 을 표기. 공식 워드마크로
+  "powered by DeepL" 배지(→ `deepl.com`)를 Google과 동일한 형식으로 표시.
+- **LLM(OpenAI 호환)·LibreTranslate·Chrome 내장** — 소비자 측 어트리뷰션 의무가
+  없어 별도 표기하지 않습니다.
 
 ## 아키텍처
 

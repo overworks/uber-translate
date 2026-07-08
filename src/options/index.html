@@ -116,14 +116,14 @@
       #test-status.ok { color: var(--ok); }
       #test-status.err { color: var(--danger); }
       .test-note { color: var(--muted); font-size: 12px; margin-top: 10px; }
-      /* Google 어트리뷰션 (google provider일 때만) */
-      .google-legal {
+      /* provider 어트리뷰션 (해당 provider 선택 시에만) */
+      .attribution-note {
         margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--border);
         border-radius: var(--r); background: var(--surface); box-shadow: var(--shadow);
       }
-      .google-legal .badge { display: inline-flex; margin-bottom: 8px; }
-      .google-legal .disclaimer { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
-      .google-legal a { color: var(--accent); }
+      .attribution-note .badge { display: inline-flex; margin-bottom: 8px; }
+      .attribution-note .disclaimer { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+      .attribution-note a { color: var(--accent); }
 
       @media (prefers-reduced-motion: reduce) {
         * { transition: none !important; }
@@ -242,11 +242,18 @@
       </div>
     </fieldset>
 
-    <div id="google-legal" class="google-legal hidden">
+    <div id="google-legal" class="attribution-note hidden">
       <div class="badge" id="google-badge"></div>
       <p class="disclaimer">
         번역은 <a href="https://cloud.google.com/translate" target="_blank" rel="noopener noreferrer">Google Cloud Translation</a>으로 제공됩니다.
         <span id="google-disclaimer"></span>
+      </p>
+    </div>
+
+    <div id="deepl-legal" class="attribution-note hidden">
+      <div class="badge" id="deepl-badge"></div>
+      <p class="disclaimer">
+        번역은 <a href="https://www.deepl.com" target="_blank" rel="noopener noreferrer">DeepL</a>로 제공됩니다.
       </p>
     </div>
 

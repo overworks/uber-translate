@@ -3,7 +3,7 @@ import { LANGUAGES, SOURCE_LANGUAGES } from '../lib/languages'
 import { getGoogleToken } from '../lib/google-auth'
 import { translate } from '../lib/translate-client'
 import { getProvider, PROVIDER_LABELS } from '../providers'
-import { googleBadge, GOOGLE_DISCLAIMER } from '../lib/attribution'
+import { googleBadge, deeplBadge, GOOGLE_DISCLAIMER } from '../lib/attribution'
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T
 
@@ -13,9 +13,10 @@ const targetLang = $<HTMLSelectElement>('targetLang')
 const googleVersion = $<HTMLSelectElement>('google-version')
 const googleAuthMode = $<HTMLSelectElement>('google-authMode')
 
-// Google 어트리뷰션: 공식 배지 + 보증 부인 문구(원문) 주입
+// 어트리뷰션: 공식 배지 + (Google) 보증 부인 문구(원문) 주입
 $('google-badge').appendChild(googleBadge('color'))
 $('google-disclaimer').textContent = GOOGLE_DISCLAIMER
+$('deepl-badge').appendChild(deeplBadge('color'))
 
 function fillLangSelect(sel: HTMLSelectElement, list: { code: string; label: string }[]) {
   for (const l of list) {
@@ -33,6 +34,7 @@ function updateVisibility() {
   const p = provider.value as ProviderId
   $('google-config').classList.toggle('hidden', p !== 'google')
   $('google-legal').classList.toggle('hidden', p !== 'google')
+  $('deepl-legal').classList.toggle('hidden', p !== 'deepl')
   $('deepl-config').classList.toggle('hidden', p !== 'deepl')
   $('libretranslate-config').classList.toggle('hidden', p !== 'libretranslate')
   $('llm-config').classList.toggle('hidden', p !== 'llm')

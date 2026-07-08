@@ -1,6 +1,7 @@
 import { translate } from '../lib/translate-client'
 import { getSettings } from '../lib/settings'
-import { googleBadge } from '../lib/attribution'
+import { attributionBadge } from '../lib/attribution'
+import type { ProviderId } from '../lib/settings'
 
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE'])
 const BATCH_SIZE = 40
@@ -51,19 +52,20 @@ function clearStatus(delay = 1500) {
 
 const ATTR_ID = 'uber-translate-attribution'
 
-/** Google 사용 시 번역된 페이지에 상시 노출되는 "powered by Google Translate" 배지 */
-function showGoogleAttribution() {
-  if (document.getElementById(ATTR_ID)) return
+/** Google/DeepL 사용 시 번역된 페이지에 상시 노출되는 어트리뷰션 배지 */
+function showAttribution(provider: ProviderId) {
+  const badge = attributionBadge(provider, 'white')
+  if (!badge || document.getElementById(ATTR_ID)) return
   const wrap = document.createElement('div')
   wrap.id = ATTR_ID
   wrap.style.cssText =
     'position:fixed;left:16px;bottom:16px;z-index:2147483647;background:#191b22;' +
     'padding:7px 10px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.35);'
-  wrap.appendChild(googleBadge('white'))
+  wrap.appendChild(badge)
   document.documentElement.appendChild(wrap)
 }
 
-function hideGoogleAttribution() {
+function hideAttribution() {
   document.getElementById(ATTR_ID)?.remove()
 }
 
@@ -97,7 +99,7 @@ export async function translatePage(): Promise<void> {
     }
     setStatus('번역 완료 ✓')
     clearStatus()
-    if (settings.activeProvider === 'google') showGoogleAttribution()
+    showAttribution(settings.activeProvider)
   } catch (e) {
     setStatus(e instanceof Error ? e.message : String(e), true)
     clearStatus(4000)
@@ -111,7 +113,7 @@ export function restorePage(): void {
     node.nodeValue = original
   }
   originals.clear()
-  hideGoogleAttribution()
+  hideAttribution()
   setStatus('원문 복원 완료 ✓')
   clearStatus()
 }
