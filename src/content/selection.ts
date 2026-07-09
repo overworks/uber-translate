@@ -45,7 +45,8 @@ function ensureUi(): Ui {
       border: 1px solid rgba(255,255,255,.08);
     }
     .ut-tip {
-      position: absolute; display: none; max-width: 360px;
+      position: absolute; display: none; box-sizing: border-box;
+      min-width: 220px; max-width: min(520px, calc(100vw - 24px));
       background: #191b22; color: #e9eaee; border: 1px solid rgba(255,255,255,.08);
       border-radius: 12px; padding: 12px 14px;
       font: 400 13px/1.55 system-ui, -apple-system, sans-serif;
@@ -193,9 +194,11 @@ async function runTranslation(text: string, rect: DOMRect | null) {
       badge.style.cssText += 'margin-top:8px;opacity:.9;'
       tooltip.appendChild(badge)
     }
+    positionTooltip(rect) // 내용이 채워져 크기가 커졌으므로 재배치
   } catch (e) {
     tooltip.classList.add('ut-error')
     tooltip.textContent = e instanceof Error ? e.message : String(e)
+    positionTooltip(rect)
   }
 }
 
@@ -204,8 +207,28 @@ function positionTooltip(rect: DOMRect | null) {
   const r = rect ?? lastSelectionRect
   if (!r) return
   const { x, bottom } = pageXY(r)
-  tooltip.style.left = `${x}px`
-  tooltip.style.top = `${bottom + 6}px`
+  // 먼저 표시해야 실제 크기(offsetWidth/Height)를 잴 수 있음
+  const wasHidden = tooltip.style.display === 'none' || !tooltip.style.display
+  if (wasHidden) {
+    tooltip.style.visibility = 'hidden'
+    tooltip.style.display = 'block'
+  }
+  const margin = 8
+  const w = tooltip.offsetWidth
+  const h = tooltip.offsetHeight
+  const { y } = pageXY(r)
+  // 가로: 뷰포트 밖으로 넘어가지 않게 clamp
+  const minLeft = window.scrollX + margin
+  const maxLeft = window.scrollX + document.documentElement.clientWidth - w - margin
+  tooltip.style.left = `${Math.max(minLeft, Math.min(x, maxLeft))}px`
+  // 세로: 아래 공간이 부족하면 선택 영역 위로 표시
+  const minTop = window.scrollY + margin
+  const belowFits = r.bottom + 6 + h <= document.documentElement.clientHeight
+  tooltip.style.top = belowFits ? `${bottom + 6}px` : `${Math.max(minTop, y - h - 6)}px`
+  if (wasHidden) {
+    tooltip.style.display = 'none'
+    tooltip.style.visibility = ''
+  }
 }
 
 /** 선택 영역 감지 → 번역 버튼 노출 */
