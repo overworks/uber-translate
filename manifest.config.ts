@@ -18,9 +18,9 @@ export default defineManifest({
   },
   permissions: [
     'storage',
-    'activeTab',
-    'scripting',
     'contextMenus',
+    // activeTab/scripting은 선언만 하고 실제 chrome.scripting/activeTab API를 쓰지 않아
+    // 스토어 심사에서 거부됨. 페이지 접근은 아래 content_scripts(<all_urls>)가 담당한다.
     // identity는 Google v3 OAuth 전용
     ...(includeGoogle ? ['identity' as const] : []),
   ],

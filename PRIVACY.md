@@ -35,8 +35,8 @@ API 키를 포함한 위 정보는 확장을 삭제하면 함께 제거됩니다
 ### 3. 권한 사용 이유
 
 - **storage** — 위 설정·이력을 로컬에 저장
-- **activeTab / scripting** — 현재 페이지의 선택 텍스트 또는 전체 페이지 번역
 - **contextMenus** — 우클릭 메뉴로 번역 실행
+- **콘텐츠 스크립트(모든 사이트)** — 현재 페이지의 선택 텍스트 또는 전체 페이지를 번역하고 번역 결과를 표시
 - **호스트 권한(선택적 포함)** — 사용자가 직접 지정한 번역 API 엔드포인트로 요청을 보내기 위해, 저장 시점에 해당 호스트 권한을 런타임으로 요청
 
 ### 4. 수집하지 않는 것
@@ -79,8 +79,8 @@ Text sent to a service is governed by that service's own privacy policy. The Ext
 ### 3. Permissions
 
 - **storage** — persist the settings/history above locally
-- **activeTab / scripting** — translate selected text or the full current page
 - **contextMenus** — trigger translation from the right-click menu
+- **content script (all sites)** — translate selected text or the full current page and display the result
 - **host permissions (optional)** — requested at runtime, when you save settings, so requests can reach the translation endpoint you specified
 
 ### 4. What we do not do
