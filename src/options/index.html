@@ -173,38 +173,12 @@
     <fieldset id="google-config">
       <legend>Google 번역</legend>
       <div class="field">
-        <label for="google-version">API 버전</label>
-        <select id="google-version">
-          <option value="v2">v2 (API 키)</option>
-          <option value="v3">v3 (프로젝트 ID + 액세스 토큰)</option>
-        </select>
-      </div>
-      <div class="field" id="google-v2-key">
         <label for="google-apiKey">API 키</label>
         <input id="google-apiKey" type="password" placeholder="AIza..." />
-      </div>
-      <div class="field hidden" id="google-v3-project">
-        <label for="google-projectId">프로젝트 ID</label>
-        <input id="google-projectId" type="text" placeholder="my-gcp-project" />
-      </div>
-      <div class="field hidden" id="google-v3-authmode">
-        <label for="google-authMode">인증 방식</label>
-        <select id="google-authMode">
-          <option value="oauth">Chrome 계정 연결 (자동 갱신, 권장)</option>
-          <option value="token">액세스 토큰 직접 입력</option>
-        </select>
-      </div>
-      <div class="field hidden" id="google-v3-connect">
-        <label>Google 계정</label>
-        <div>
-          <button type="button" id="google-connect" class="secondary">Google 계정 연결</button>
-          <span id="google-connect-status" class="hint" style="grid-column:auto"></span>
+        <div class="hint">
+          GCP 콘솔에서 Cloud Translation API 활성화 + 결제 계정 연결 후,
+          사용자 인증 정보에서 발급한 API 키 (Cloud Translation v2)
         </div>
-      </div>
-      <div class="field hidden" id="google-v3-token">
-        <label for="google-accessToken">액세스 토큰</label>
-        <input id="google-accessToken" type="password" placeholder="ya29..." />
-        <div class="hint">gcloud auth application-default print-access-token 등으로 발급 (약 1시간 만료)</div>
       </div>
     </fieldset>
 

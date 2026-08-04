@@ -5,7 +5,7 @@
 ## 지원 번역 서비스
 
 - **Chrome 내장 번역기** — API 키 불필요, 온디바이스 (Chrome 138+ 데스크톱)
-- **Google 번역** — Cloud Translation v2(API 키) / v3(프로젝트 ID + 액세스 토큰)
+- **Google 번역** — Cloud Translation v2 (API 키)
 - **DeepL** — 무료(`:fx`)/Pro 자동 판별
 - **LibreTranslate** — 오픈소스 self-host/공개 인스턴스 (인스턴스 URL + 선택 API 키)
 - **LLM (OpenAI 호환)** — `baseUrl`/`apiKey`/`model`만 넣으면 OpenAI, OpenRouter,
@@ -35,20 +35,14 @@ npm run build    # 프로덕션 빌드
 2. **압축해제된 확장 프로그램 로드** → `dist/` 폴더 선택
 3. 확장 아이콘 → **설정**에서 번역 서비스와 API 키 구성
 
-## Google 번역 v3 인증 (chrome.identity OAuth)
+## Google 번역 설정
 
-v3의 액세스 토큰은 약 1시간이면 만료됩니다. `chrome.identity`를 쓰면 Chrome이
-토큰을 자동 발급·갱신하므로 매번 붙여넣을 필요가 없습니다. **한 번만** 설정하면 됩니다:
+Cloud Translation **v2**(API 키)만 사용합니다. 만료되는 토큰도, OAuth 설정도 없습니다.
 
-1. 확장을 로드하고(`chrome://extensions`) 발급된 **확장 ID**를 확인합니다.
-2. GCP 콘솔 → **API 및 서비스 → 사용자 인증 정보 → OAuth 클라이언트 ID 만들기**
-   → 유형 **Chrome 확장 프로그램**, 위 확장 ID 입력.
-3. 발급된 `client_id`를 `manifest.config.ts`의 `oauth2.client_id`에 넣고 다시 `build` → 리로드.
-4. 대상 프로젝트에 **Cloud Translation API 활성화** + 결제 계정 연결.
-5. 확장 **설정**에서 Google → v3 → 인증 방식 **"Chrome 계정 연결"** → **Google 계정 연결** 버튼 클릭.
-
-이후로는 토큰이 만료돼도 자동 갱신되며, 401 발생 시 확장이 캐시를 비우고 재발급합니다.
-간단하게 쓰려면 v3 대신 **v2(API 키)** 를 쓰면 만료·OAuth 설정이 전혀 없습니다.
+1. GCP 콘솔에서 대상 프로젝트에 **Cloud Translation API 활성화** + 결제 계정 연결.
+2. **API 및 서비스 → 사용자 인증 정보 → API 키 만들기**로 키를 발급
+   (키 제한은 **Cloud Translation API**로 걸어두는 것을 권장).
+3. 확장 **설정** → 활성 서비스 **Google 번역** → 발급한 API 키 입력 → 저장.
 
 ## 번역 서비스 어트리뷰션
 

@@ -28,7 +28,7 @@ API 키를 포함한 위 정보는 확장을 삭제하면 함께 제거됩니다
 | DeepL | `api.deepl.com` / `api-free.deepl.com` |
 | LibreTranslate | 사용자가 입력한 인스턴스 URL |
 | LLM (OpenAI 호환) | 사용자가 입력한 엔드포인트 URL (OpenAI, OpenRouter, 로컬 서버 등) |
-| Google 번역 _(해당 버전에 한함)_ | `translation.googleapis.com` |
+| Google 번역 | `translation.googleapis.com` |
 
 전송된 텍스트에 대한 각 서비스의 처리 방침은 해당 서비스의 개인정보 처리방침을 따릅니다. 본 확장은 이 전송을 중개할 뿐 별도로 저장하지 않습니다.
 
@@ -72,7 +72,7 @@ When you translate, the text is sent **only to the translation service you selec
 | DeepL | `api.deepl.com` / `api-free.deepl.com` |
 | LibreTranslate | The instance URL you entered |
 | LLM (OpenAI-compatible) | The endpoint URL you entered |
-| Google Translate _(versions that include it)_ | `translation.googleapis.com` |
+| Google Translate | `translation.googleapis.com` |
 
 Text sent to a service is governed by that service's own privacy policy. The Extension merely relays the request and does not separately retain it.
 

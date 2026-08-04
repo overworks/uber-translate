@@ -6,15 +6,13 @@ import { deeplProvider } from './deepl'
 import { libreTranslateProvider } from './libretranslate'
 import { llmProvider } from './llm'
 
-const registry: Partial<Record<ProviderId, TranslationProvider>> = {
+const registry: Record<ProviderId, TranslationProvider> = {
   builtin: builtinProvider,
+  google: googleProvider,
   deepl: deeplProvider,
   libretranslate: libreTranslateProvider,
   llm: llmProvider,
 }
-// 심사용 빌드(__INCLUDE_GOOGLE__=false)에서는 googleProvider 참조가 죽은 가지가 되어
-// google.ts → google-auth.ts(chrome.identity) 체인이 번들에서 트리셰이킹으로 제거된다.
-if (__INCLUDE_GOOGLE__) registry.google = googleProvider
 
 export function getProvider(id: ProviderId): TranslationProvider {
   const p = registry[id]

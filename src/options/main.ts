@@ -1,6 +1,5 @@
 import { getSettings, saveSettings, type ProviderId, type Settings } from '../lib/settings'
 import { LANGUAGES, SOURCE_LANGUAGES } from '../lib/languages'
-import { getGoogleToken } from '../lib/google-auth'
 import { translate } from '../lib/translate-client'
 import { getProvider, PROVIDER_LABELS } from '../providers'
 import { googleBadge, deeplBadge, GOOGLE_DISCLAIMER } from '../lib/attribution'
@@ -10,14 +9,6 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const provider = $<HTMLSelectElement>('provider')
 const sourceLang = $<HTMLSelectElement>('sourceLang')
 const targetLang = $<HTMLSelectElement>('targetLang')
-const googleVersion = $<HTMLSelectElement>('google-version')
-const googleAuthMode = $<HTMLSelectElement>('google-authMode')
-
-// 심사용 빌드(__INCLUDE_GOOGLE__=false)에서는 Google 옵션을 UI에서 완전히 제거해
-// 심사자에게 동작하지 않는 선택지가 노출되지 않도록 한다.
-if (!__INCLUDE_GOOGLE__) {
-  provider.querySelector('option[value="google"]')?.remove()
-}
 
 // 어트리뷰션: 공식 배지 + (Google) 보증 부인 문구(원문) 주입
 $('google-badge').appendChild(googleBadge('color'))
@@ -44,45 +35,15 @@ function updateVisibility() {
   $('deepl-config').classList.toggle('hidden', p !== 'deepl')
   $('libretranslate-config').classList.toggle('hidden', p !== 'libretranslate')
   $('llm-config').classList.toggle('hidden', p !== 'llm')
-
-  const v3 = googleVersion.value === 'v3'
-  const oauth = googleAuthMode.value === 'oauth'
-  $('google-v2-key').classList.toggle('hidden', v3)
-  $('google-v3-project').classList.toggle('hidden', !v3)
-  $('google-v3-authmode').classList.toggle('hidden', !v3)
-  $('google-v3-connect').classList.toggle('hidden', !v3 || !oauth)
-  $('google-v3-token').classList.toggle('hidden', !v3 || oauth)
 }
 provider.addEventListener('change', updateVisibility)
-googleVersion.addEventListener('change', updateVisibility)
-googleAuthMode.addEventListener('change', updateVisibility)
-
-// "Google 계정 연결" — 대화형 동의 (이후 background에서 silent로 자동 갱신)
-// __INCLUDE_GOOGLE__ 가드로 감싸 심사용 빌드에서 getGoogleToken(→chrome.identity) import가
-// 죽은 가지가 되어 google-auth.ts가 번들에서 제거되도록 한다.
-if (__INCLUDE_GOOGLE__) {
-  $<HTMLButtonElement>('google-connect').addEventListener('click', async () => {
-    const status = $('google-connect-status')
-    status.textContent = '연결 중…'
-    try {
-      await getGoogleToken(true)
-      status.textContent = '연결됨 ✓'
-    } catch (e) {
-      status.textContent = e instanceof Error ? e.message : String(e)
-    }
-  })
-}
 
 async function load() {
   const s = await getSettings()
   provider.value = s.activeProvider
   sourceLang.value = s.sourceLang
   targetLang.value = s.targetLang
-  googleVersion.value = s.google.apiVersion
-  googleAuthMode.value = s.google.authMode
   ;($('google-apiKey') as HTMLInputElement).value = s.google.apiKey
-  ;($('google-projectId') as HTMLInputElement).value = s.google.projectId
-  ;($('google-accessToken') as HTMLInputElement).value = s.google.accessToken
   ;($('deepl-apiKey') as HTMLInputElement).value = s.deepl.apiKey
   ;($('libretranslate-baseUrl') as HTMLInputElement).value = s.libretranslate.baseUrl
   ;($('libretranslate-apiKey') as HTMLInputElement).value = s.libretranslate.apiKey
@@ -113,13 +74,7 @@ async function collectSettings(): Promise<Settings> {
     activeProvider: provider.value as ProviderId,
     sourceLang: sourceLang.value,
     targetLang: targetLang.value,
-    google: {
-      apiVersion: googleVersion.value as 'v2' | 'v3',
-      apiKey: ($('google-apiKey') as HTMLInputElement).value.trim(),
-      projectId: ($('google-projectId') as HTMLInputElement).value.trim(),
-      authMode: googleAuthMode.value as 'oauth' | 'token',
-      accessToken: ($('google-accessToken') as HTMLInputElement).value.trim(),
-    },
+    google: { apiKey: ($('google-apiKey') as HTMLInputElement).value.trim() },
     deepl: { apiKey: ($('deepl-apiKey') as HTMLInputElement).value.trim() },
     libretranslate: {
       baseUrl: ($('libretranslate-baseUrl') as HTMLInputElement).value.trim(),

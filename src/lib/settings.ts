@@ -1,15 +1,8 @@
 export type ProviderId = 'builtin' | 'google' | 'deepl' | 'libretranslate' | 'llm'
 
+/** Google Cloud Translation v2 — API 키 하나로 동작 */
 export interface GoogleConfig {
-  apiVersion: 'v2' | 'v3'
-  /** v2: API 키 */
   apiKey: string
-  /** v3: GCP 프로젝트 ID (URL + quota project) */
-  projectId: string
-  /** v3 인증 방식: 'oauth' = chrome.identity 자동 갱신, 'token' = 수동 액세스 토큰 */
-  authMode: 'oauth' | 'token'
-  /** v3(token 모드): 수동 붙여넣은 OAuth 2.0 액세스 토큰 */
-  accessToken: string
 }
 
 export interface DeeplConfig {
@@ -49,7 +42,7 @@ export const DEFAULT_SETTINGS: Settings = {
   activeProvider: 'builtin',
   targetLang: 'ko',
   sourceLang: 'auto',
-  google: { apiVersion: 'v2', apiKey: '', projectId: '', authMode: 'oauth', accessToken: '' },
+  google: { apiKey: '' },
   deepl: { apiKey: '' },
   libretranslate: { baseUrl: '', apiKey: '' },
   llm: { baseUrl: 'https://api.openai.com/v1', apiKey: '', model: 'gpt-4o-mini', prompt: '' },
@@ -64,31 +57,24 @@ export async function getSettings(): Promise<Settings> {
   const merged: Settings = {
     ...DEFAULT_SETTINGS,
     ...stored,
-    google: { ...DEFAULT_SETTINGS.google, ...stored.google },
+    // google은 스프레드가 아닌 명시적 픽 — v3 시절의 accessToken(만료된 OAuth 토큰)
+    // 등 폐기된 키가 저장소에 남아 다시 기록되지 않도록 한다.
+    google: { apiKey: stored.google?.apiKey ?? DEFAULT_SETTINGS.google.apiKey },
     deepl: { ...DEFAULT_SETTINGS.deepl, ...stored.deepl },
     libretranslate: { ...DEFAULT_SETTINGS.libretranslate, ...stored.libretranslate },
     llm: { ...DEFAULT_SETTINGS.llm, ...stored.llm },
   }
-  // 마이그레이션: authMode 도입 이전에 저장된 v3 사용자는 조용히 OAuth로 바뀌면 안 되므로
-  // 액세스 토큰이 있으면 'token' 모드로 유지한다.
-  if (stored.google && stored.google.authMode === undefined) {
-    merged.google.authMode = stored.google.accessToken ? 'token' : 'oauth'
-  }
-  // 저장된 activeProvider가 이 빌드에서 사용할 수 없으면(알 수 없는 값이거나,
-  // 심사용 빌드에서 제외된 'google') 기본값으로 되돌린다.
-  // 이렇게 하지 않으면 getProvider가 throw하거나 옵션 셀렉트가 빈 값이 되어
-  // 무효한 provider 상태가 저장될 수 있다.
+  // 저장된 activeProvider가 알 수 없는 값이면 기본값으로 되돌린다. 이렇게 하지 않으면
+  // getProvider가 throw하거나 옵션 셀렉트가 빈 값이 되어 무효한 provider 상태가 저장될 수 있다.
   if (!isAvailableProvider(merged.activeProvider)) {
     merged.activeProvider = DEFAULT_SETTINGS.activeProvider
   }
   return merged
 }
 
-/** 현재 빌드에서 선택 가능한 provider인지 검사한다. */
+/** 선택 가능한 provider인지 검사한다. */
 function isAvailableProvider(id: unknown): id is ProviderId {
-  const available: ProviderId[] = __INCLUDE_GOOGLE__
-    ? ['builtin', 'google', 'deepl', 'libretranslate', 'llm']
-    : ['builtin', 'deepl', 'libretranslate', 'llm']
+  const available: ProviderId[] = ['builtin', 'google', 'deepl', 'libretranslate', 'llm']
   return typeof id === 'string' && (available as string[]).includes(id)
 }
 

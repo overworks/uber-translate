@@ -1,117 +1,75 @@
 import type { TranslationProvider } from './types'
-import { getGoogleToken, clearGoogleToken } from '../lib/google-auth'
 
-/** Google Cloud Translation — v2(API 키) / v3(프로젝트 ID + 액세스 토큰) 모두 지원 */
+const ENDPOINT = 'https://translation.googleapis.com/language/translate/v2'
+
+/**
+ * languages.ts는 v3 표기(zh-Hans/zh-Hant)를 쓰지만 v2는 지역 코드를 요구한다.
+ * 여기서만 변환하고 공통 목록은 건드리지 않는다 — 다른 provider는 현재 표기가 맞다.
+ */
+const LANG_MAP: Record<string, string> = {
+  'zh-Hans': 'zh-CN',
+  'zh-Hant': 'zh-TW',
+}
+const toV2Lang = (code: string) => LANG_MAP[code] ?? code
+
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+}
+
+/**
+ * v2는 format:'text'여도 응답을 HTML 이스케이프해 돌려준다(&#39; &amp; 등).
+ * service worker에는 DOM 파서가 없으므로 직접 디코드한다.
+ * 이중 이스케이프(&amp;#39; → &#39;)를 되살리지 않도록 반드시 한 번만 훑는다.
+ */
+function decodeEntities(s: string): string {
+  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (whole, body: string) => {
+    if (body[0] === '#') {
+      const cp = body[1] === 'x' || body[1] === 'X' ? parseInt(body.slice(2), 16) : Number(body.slice(1))
+      // 유효 범위를 벗어나면 원문 유지 (fromCodePoint가 throw하는 것을 막는다)
+      return Number.isInteger(cp) && cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : whole
+    }
+    return NAMED_ENTITIES[body.toLowerCase()] ?? whole
+  })
+}
+
+/** Google Cloud Translation v2 (API 키) */
 export const googleProvider: TranslationProvider = {
   id: 'google',
-  // 번역 대신 지원 언어 목록 조회로 키/토큰만 검증.
+  // 번역 대신 지원 언어 목록 조회로 키만 검증.
   async test(settings) {
-    const g = settings.google
-
-    if (g.apiVersion === 'v3') {
-      if (!g.projectId) throw new Error('Google v3에는 프로젝트 ID가 필요합니다.')
-      const url = `https://translation.googleapis.com/v3/projects/${encodeURIComponent(
-        g.projectId,
-      )}/locations/global/supportedLanguages`
-      const useOauth = g.authMode === 'oauth'
-      const send = (token: string) =>
-        fetch(url, {
-          headers: { Authorization: `Bearer ${token}`, 'x-goog-user-project': g.projectId },
-        })
-
-      let token = useOauth ? await getGoogleToken(false) : g.accessToken
-      if (!token) throw new Error('Google v3에는 액세스 토큰이 필요합니다.')
-      let r = await send(token)
-      if (r.status === 401 && useOauth) {
-        await clearGoogleToken(token)
-        token = await getGoogleToken(false)
-        r = await send(token)
-      }
-      if (!r.ok) throw new Error(`Google v3 오류 (${r.status}): ${await r.text()}`)
-      const data = await r.json().catch(() => null)
-      const n = Array.isArray(data?.languages) ? data.languages.length : undefined
-      return n != null ? `언어 ${n}개 확인` : '연결 확인'
-    }
-
-    if (!g.apiKey) throw new Error('Google v2에는 API 키가 필요합니다.')
-    const url = `https://translation.googleapis.com/language/translate/v2/languages?key=${encodeURIComponent(
-      g.apiKey,
-    )}`
-    const r = await fetch(url)
-    if (!r.ok) throw new Error(`Google v2 오류 (${r.status}): ${await r.text()}`)
+    const { apiKey } = settings.google
+    if (!apiKey) throw new Error('Google 번역에는 API 키가 필요합니다.')
+    const r = await fetch(`${ENDPOINT}/languages?key=${encodeURIComponent(apiKey)}`)
+    if (!r.ok) throw new Error(`Google 번역 오류 (${r.status}): ${await r.text()}`)
     const data = await r.json().catch(() => null)
     const n = Array.isArray(data?.data?.languages) ? data.data.languages.length : undefined
     return n != null ? `언어 ${n}개 확인` : '키 확인'
   },
   async translate(req, settings) {
-    const g = settings.google
-    const source = req.source && req.source !== 'auto' ? req.source : undefined
+    const { apiKey } = settings.google
+    if (!apiKey) throw new Error('Google 번역에는 API 키가 필요합니다.')
 
-    if (g.apiVersion === 'v3') {
-      if (!g.projectId) throw new Error('Google v3에는 프로젝트 ID가 필요합니다.')
-      const url = `https://translation.googleapis.com/v3/projects/${encodeURIComponent(
-        g.projectId,
-      )}:translateText`
-      const body = JSON.stringify({
-        contents: req.text,
-        targetLanguageCode: req.target,
-        mimeType: 'text/plain',
-        ...(source ? { sourceLanguageCode: source } : {}),
-      })
-      const useOauth = g.authMode === 'oauth'
-
-      const send = (token: string) =>
-        fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            // 사용자 자격증명 토큰은 quota project가 없으면 거부되므로 명시한다.
-            'x-goog-user-project': g.projectId,
-          },
-          body,
-        })
-
-      let token = useOauth ? await getGoogleToken(false) : g.accessToken
-      if (!token) throw new Error('Google v3에는 액세스 토큰이 필요합니다.')
-      let r = await send(token)
-
-      // OAuth 모드: 토큰 만료(401) 시 캐시 비우고 한 번 재발급 후 재시도
-      if (r.status === 401 && useOauth) {
-        await clearGoogleToken(token)
-        token = await getGoogleToken(false)
-        r = await send(token)
-      }
-
-      if (!r.ok) throw new Error(`Google v3 오류 (${r.status}): ${await r.text()}`)
-      const data = await r.json()
-      const list = data.translations ?? []
-      return {
-        translations: list.map((t: any) => t.translatedText),
-        detectedSource: list[0]?.detectedLanguageCode,
-      }
-    }
-
-    // v2
-    if (!g.apiKey) throw new Error('Google v2에는 API 키가 필요합니다.')
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
-      g.apiKey,
-    )}`
-    const r = await fetch(url, {
+    const source = req.source && req.source !== 'auto' ? toV2Lang(req.source) : undefined
+    const r = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         q: req.text,
-        target: req.target,
+        target: toV2Lang(req.target),
         format: 'text',
         ...(source ? { source } : {}),
       }),
     })
-    if (!r.ok) throw new Error(`Google v2 오류 (${r.status}): ${await r.text()}`)
+    if (!r.ok) throw new Error(`Google 번역 오류 (${r.status}): ${await r.text()}`)
     const data = await r.json()
     const list = data.data?.translations ?? []
     return {
-      translations: list.map((t: any) => t.translatedText),
+      translations: list.map((t: any) => decodeEntities(t.translatedText ?? '')),
       detectedSource: list[0]?.detectedSourceLanguage,
     }
   },

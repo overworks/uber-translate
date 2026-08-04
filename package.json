@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:review": "INCLUDE_GOOGLE=0 vite build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
